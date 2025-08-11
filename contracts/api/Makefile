@@ -3,20 +3,22 @@ SHELL := /bin/bash
 TEST_FILES := $(shell find src -name '*.ts')
 BIN := ./node_modules/.bin
 
-SRC_CONTRACT_NAME = contractname
+SRC_CONTRACT_NAME = api
 MAINNET_NODE_URL = https://eos.greymass.com
-MAINNET_CONTRACT_ACCOUNT = contractname
+MAINNET_CONTRACT_ACCOUNT = api
 TESTNET_NODE_URL = https://jungle4.greymass.com
-TESTNET_CONTRACT_ACCOUNT = contractname
+TESTNET_CONTRACT_ACCOUNT = api
+
+INCLUDES = -I include -I ../../shared/include
 
 build: | build/dir
-	cdt-cpp -O=2 -abigen -abigen_output=build/${SRC_CONTRACT_NAME}.abi -o build/${SRC_CONTRACT_NAME}.wasm src/${SRC_CONTRACT_NAME}.cpp -R src -I include -D DEBUG
+	cdt-cpp -O=2 -abigen -abigen_output=build/${SRC_CONTRACT_NAME}.abi -o build/${SRC_CONTRACT_NAME}.wasm src/${SRC_CONTRACT_NAME}.cpp -R src ${INCLUDES} -D DEBUG
 
 build/debug: | build/dir
-	cdt-cpp -O=2 -abigen -abigen_output=build/${SRC_CONTRACT_NAME}.abi -o build/${SRC_CONTRACT_NAME}.wasm src/${SRC_CONTRACT_NAME}.cpp -R src -I include -D DEBUG
+	cdt-cpp -O=2 -abigen -abigen_output=build/${SRC_CONTRACT_NAME}.abi -o build/${SRC_CONTRACT_NAME}.wasm src/${SRC_CONTRACT_NAME}.cpp -R src ${INCLUDES} -D DEBUG
 
 build/production: | build/dir
-	cdt-cpp -O=2 -abigen -abigen_output=build/${SRC_CONTRACT_NAME}.abi -o build/${SRC_CONTRACT_NAME}.wasm src/${SRC_CONTRACT_NAME}.cpp -R src -I include
+	cdt-cpp -O=2 -abigen -abigen_output=build/${SRC_CONTRACT_NAME}.abi -o build/${SRC_CONTRACT_NAME}.wasm src/${SRC_CONTRACT_NAME}.cpp -R src ${INCLUDES}
 
 build/dir:
 	mkdir -p build
