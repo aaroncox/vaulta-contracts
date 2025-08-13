@@ -1,7 +1,6 @@
 import {beforeEach, describe, expect, test} from 'bun:test'
 
-import {registryContract, contracts, resetContracts} from '../helpers'
-import {Asset, Name} from '@wharfkit/antelope'
+import {contracts, registryContract, resetContracts} from '../helpers'
 
 describe(`contract: ${registryContract}`, () => {
     beforeEach(async () => {
