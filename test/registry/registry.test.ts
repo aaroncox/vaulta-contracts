@@ -311,7 +311,7 @@ describe(`contract: ${registryContract}`, () => {
                         )
                     ).toBeTrue()
 
-                    let rows = await contracts.registry.tables.balance().getTableRows()
+                    const rows = await contracts.registry.tables.balance().getTableRows()
                     expect(rows).toHaveLength(1)
                     expect(rows[0].account).toBe('alice')
                     expect(rows[0].balance).toBe('50.0000 A')
