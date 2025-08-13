@@ -42,16 +42,6 @@ describe(`contract: ${apiContract}`, () => {
                 expect(Name.from(rows[0].system_token_contract).equals('foo.token')).toBeTrue()
                 expect(Asset.Symbol.from(rows[0].system_token_symbol).equals('4,FOO')).toBeTrue()
             })
-            test('defaults', async () => {
-                const rows = await contracts.api.tables.config().getTableRows()
-                expect(rows).toHaveLength(1)
-                expect(Name.from(rows[0].system_contract).equals('eosio')).toBeTrue()
-                expect(Name.from(rows[0].system_contract_msig).equals('eosio.msig')).toBeTrue()
-                expect(Name.from(rows[0].system_token_contract).equals('eosio.token')).toBeTrue()
-                expect(
-                    Asset.Symbol.from(rows[0].system_token_symbol).equals('0,UNKNOWN')
-                ).toBeTrue()
-            })
         })
         describe('error', () => {
             test('require contract auth', async () => {

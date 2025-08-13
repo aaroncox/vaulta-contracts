@@ -55,10 +55,13 @@ test: build/debug codegen node_modules
 # CODEGEN
 
 .PHONY: codegen
-codegen: codegen/api codegen/registry
+codegen: codegen/api codegen/registry codegen/token
 
 codegen/api:
 	npx @wharfkit/cli generate --json ./contracts/api/build/api.abi --file ./codegen/api.ts api
 
 codegen/registry:
 	npx @wharfkit/cli generate --json ./contracts/registry/build/registry.abi --file ./codegen/registry.ts registry
+
+codegen/token:
+	npx @wharfkit/cli generate --json ./shared/include/eosio.token/eosio.token.abi --file ./codegen/token.ts token
