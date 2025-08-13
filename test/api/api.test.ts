@@ -3,12 +3,12 @@ import {beforeEach, describe, expect, test} from 'bun:test'
 import {apiContract, contracts, resetContracts} from '../helpers'
 import {Asset, Name} from '@wharfkit/antelope'
 
-describe(apiContract, () => {
+describe(`contract: ${apiContract}`, () => {
     beforeEach(async () => {
         await resetContracts()
     })
 
-    describe('action::setconfig', () => {
+    describe('action: setconfig', () => {
         describe('success', () => {
             test('set config', async () => {
                 /*
