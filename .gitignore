@@ -2,7 +2,6 @@ build
 codegen/*.ts
 node_modules
 *.wasm
-*.abi
 !include/**/*
 *.log
 .vscode
