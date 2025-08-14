@@ -16,13 +16,14 @@ using std::string;
 /**
  * The `eosio.token` sample system contract defines the structures and actions that allow users to create, issue, and
  * manage tokens for EOSIO based blockchains. It demonstrates one way to implement a smart contract which allows for
- * creation and management of tokens. It is possible for one to create a similar contract which suits different needs.
- * However, it is recommended that if one only needs a token with the below listed actions, that one uses the
+ * creation and management of tokens. It is possible for one to create a similar contract which suits different
+ * needs. However, it is recommended that if one only needs a token with the below listed actions, that one uses the
  * `eosio.token` contract instead of developing their own.
  *
  * The `eosio.token` contract class also implements two useful public static methods: `get_supply` and `get_balance`.
- * The first allows one to check the total supply of a specified token, created by an account and the second allows one
- * to check the balance of a token for a specified account (the token creator account has to be specified as well).
+ * The first allows one to check the total supply of a specified token, created by an account and the second allows
+ * one to check the balance of a token for a specified account (the token creator account has to be specified as
+ * well).
  *
  * The `eosio.token` contract manages the set of tokens, accounts and their corresponding balances, by using two
  * internal multi-index structures: the `accounts` and `stats`. The `accounts` multi-index table holds, for each row,
@@ -53,7 +54,8 @@ public:
     * @pre maximum_supply has to be smaller than the maximum supply allowed by the system: 1^62 - 1.
     * @pre Maximum supply must be positive;
     */
-   [[eosio::action]] void create(const name& issuer, const asset& maximum_supply);
+   [[eosio::action]]
+   void create(const name& issuer, const asset& maximum_supply);
    /**
     *  This action issues to `to` account a `quantity` of tokens.
     *
@@ -61,7 +63,8 @@ public:
     * @param quantity - the amount of tokens to be issued,
     * @param memo - the memo string that accompanies the token issue transaction.
     */
-   [[eosio::action]] void issue(const name& to, const asset& quantity, const string& memo);
+   [[eosio::action]]
+   void issue(const name& to, const asset& quantity, const string& memo);
 
    /**
     * Issues only the necessary tokens to bridge the gap between the current supply and the targeted total.
@@ -70,7 +73,8 @@ public:
     * @param supply - the target total supply for the token.
     * @param memo - the memo string that accompanies the token issue transaction.
     */
-   [[eosio::action]] void issuefixed(const name& to, const asset& supply, const string& memo);
+   [[eosio::action]]
+   void issuefixed(const name& to, const asset& supply, const string& memo);
 
    /**
     * Set the maximum supply of the token.
@@ -78,7 +82,8 @@ public:
     * @param issuer - the issuer account setting the maximum supply.
     * @param maximum_supply - the maximum supply of the token.
     */
-   [[eosio::action]] void setmaxsupply(const name& issuer, const asset& maximum_supply);
+   [[eosio::action]]
+   void setmaxsupply(const name& issuer, const asset& maximum_supply);
 
    /**
     * The opposite for create action, if all validations succeed,
@@ -87,7 +92,8 @@ public:
     * @param quantity - the quantity of tokens to retire,
     * @param memo - the memo string to accompany the transaction.
     */
-   [[eosio::action]] void retire(const asset& quantity, const string& memo);
+   [[eosio::action]]
+   void retire(const asset& quantity, const string& memo);
 
    /**
     * Allows `from` account to transfer to `to` account the `quantity` tokens.
@@ -98,7 +104,8 @@ public:
     * @param quantity - the quantity of tokens to be transferred,
     * @param memo - the memo string to accompany the transaction.
     */
-   [[eosio::action]] void transfer(const name& from, const name& to, const asset& quantity, const string& memo);
+   [[eosio::action]]
+   void transfer(const name& from, const name& to, const asset& quantity, const string& memo);
    /**
     * Allows `ram_payer` to create an account `owner` with zero balance for
     * token `symbol` at the expense of `ram_payer`.
@@ -110,7 +117,8 @@ public:
     * More information can be read [here](https://github.com/EOSIO/eosio.contracts/issues/62)
     * and [here](https://github.com/EOSIO/eosio.contracts/issues/61).
     */
-   [[eosio::action]] void open(const name& owner, const symbol& symbol, const name& ram_payer);
+   [[eosio::action]]
+   void open(const name& owner, const symbol& symbol, const name& ram_payer);
 
    /**
     * This action is the opposite for open, it closes the account `owner`
@@ -122,7 +130,8 @@ public:
     * @pre The pair of owner plus symbol has to exist otherwise no action is executed,
     * @pre If the pair of owner plus symbol exists, the balance has to be zero.
     */
-   [[eosio::action]] void close(const name& owner, const symbol& symbol);
+   [[eosio::action]]
+   void close(const name& owner, const symbol& symbol);
 
    static asset get_supply(const name& token_contract_account, const symbol_code& sym_code)
    {

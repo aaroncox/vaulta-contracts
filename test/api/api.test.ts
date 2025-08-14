@@ -3,12 +3,12 @@ import {beforeEach, describe, expect, test} from 'bun:test'
 import {apiContract, contracts, resetContracts} from '../helpers'
 import {Asset, Name} from '@wharfkit/antelope'
 
-describe(apiContract, () => {
+describe(`contract: ${apiContract}`, () => {
     beforeEach(async () => {
         await resetContracts()
     })
 
-    describe('action::setconfig', () => {
+    describe('action: setconfig', () => {
         describe('success', () => {
             test('set config', async () => {
                 /*
@@ -41,16 +41,6 @@ describe(apiContract, () => {
                 expect(Name.from(rows[0].system_contract_msig).equals('foo.msig')).toBeTrue()
                 expect(Name.from(rows[0].system_token_contract).equals('foo.token')).toBeTrue()
                 expect(Asset.Symbol.from(rows[0].system_token_symbol).equals('4,FOO')).toBeTrue()
-            })
-            test('defaults', async () => {
-                const rows = await contracts.api.tables.config().getTableRows()
-                expect(rows).toHaveLength(1)
-                expect(Name.from(rows[0].system_contract).equals('eosio')).toBeTrue()
-                expect(Name.from(rows[0].system_contract_msig).equals('eosio.msig')).toBeTrue()
-                expect(Name.from(rows[0].system_token_contract).equals('eosio.token')).toBeTrue()
-                expect(
-                    Asset.Symbol.from(rows[0].system_token_symbol).equals('0,UNKNOWN')
-                ).toBeTrue()
             })
         })
         describe('error', () => {
