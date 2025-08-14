@@ -1,7 +1,6 @@
 build
 codegen/*.ts
 node_modules
-*.wasm
 !include/**/*
 *.log
 .vscode
