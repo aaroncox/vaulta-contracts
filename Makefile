@@ -3,11 +3,11 @@ SHELL := /bin/bash
 
 # CONTRACT BUILD
 
-build: build/api/production build/registry/production
+build: build/production
 
-build/debug: build/api/debug build/registry/debug
+build/debug: build/api/debug build/registry/debug build/tokens/debug
 
-build/production: build/api/production build/registry/production
+build/production: build/api/production build/registry/production build/tokens/production
 
 build/api:
 	make -C contracts/api build
@@ -27,6 +27,15 @@ build/registry/debug:
 build/registry/production:
 	make -C contracts/registry build/production
 
+build/tokens:
+	make -C contracts/tokens build
+
+build/tokens/debug:
+	make -C contracts/tokens build/debug
+
+build/tokens/production:
+	make -C contracts/tokens build/production
+
 # UNIT TESTS
 
 test/api: build/api/debug node_modules codegen
@@ -34,6 +43,9 @@ test/api: build/api/debug node_modules codegen
 
 test/registry: build/registry/debug node_modules codegen
 	bun test -t "contract: registry"
+
+test/tokens: build/tokens/debug node_modules codegen
+	bun test -t "contract: tokens"
 
 node_modules:
 	make -C contracts/api node_modules
@@ -55,7 +67,7 @@ test: build/debug codegen node_modules
 # CODEGEN
 
 .PHONY: codegen
-codegen: codegen/api codegen/registry codegen/token
+codegen: codegen/api codegen/registry codegen/token codegen/tokens
 
 codegen/api:
 	npx @wharfkit/cli generate --json ./contracts/api/build/api.abi --file ./codegen/api.ts api
@@ -65,3 +77,6 @@ codegen/registry:
 
 codegen/token:
 	npx @wharfkit/cli generate --json ./shared/include/eosio.token/eosio.token.abi --file ./codegen/token.ts token
+
+codegen/tokens:
+	npx @wharfkit/cli generate --json ./contracts/tokens/build/tokens.abi --file ./codegen/tokens.ts tokens
