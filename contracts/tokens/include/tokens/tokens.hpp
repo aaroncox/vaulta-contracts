@@ -206,9 +206,21 @@ public:
                                                            const std::vector<antelope::token_allocation>& allocations,
                                                            const asset&                                   fee);
 
+   [[eosio::action]] void allocate(const name& issuer, const name& receiver, const asset& quantity);
+   using allocate_action = eosio::action_wrapper<"allocate"_n, &tokens::allocate>;
+
+#ifdef DEBUG
+   [[eosio::action]] void reset(const std::vector<eosio::symbol> testsymbols, const std::vector<name> testaccounts);
+#endif
+
 private:
    void sub_balance(const name& owner, const asset& value);
    void add_balance(const name& owner, const asset& value, const name& ram_payer);
+
+#ifdef DEBUG
+   template <typename T>
+   void clear_table(T& table, uint64_t rows_to_clear);
+#endif
 };
 
 } // namespace tokens

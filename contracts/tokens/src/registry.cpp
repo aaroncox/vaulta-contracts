@@ -46,8 +46,17 @@ tokens::register_token(const name&                                    contract,
 
    // Perform the allocations
    for (const auto& allocation : allocations) {
-      add_balance(allocation.receiver, allocation.quantity, issuer);
+      add_balance(allocation.receiver, allocation.quantity, get_self());
+      allocate_action allocate_act{get_self(), {{get_self(), eosiosystem::system_contract::active_permission}}};
+      allocate_act.send(issuer, allocation.receiver, allocation.quantity);
    }
+}
+
+void tokens::allocate(const name& issuer, const name& receiver, const asset& quantity)
+{
+   require_auth(get_self());
+   require_recipient(issuer);
+   require_recipient(receiver);
 }
 
 } // namespace tokens
