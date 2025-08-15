@@ -1,3 +1,3 @@
-<h1 class="clause">contractname</h1>
+<h1 class="clause">registry</h1>
 
-contractname
+registry

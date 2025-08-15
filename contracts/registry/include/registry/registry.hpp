@@ -34,12 +34,6 @@ public:
       asset regtoken;
    };
 
-   struct distribution
-   {
-      name  receiver;
-      asset quantity;
-   };
-
    struct [[eosio::table("config")]] config_row
    {
       bool enabled = false;
@@ -92,11 +86,11 @@ public:
    using withdraw_action = eosio::action_wrapper<"withdraw"_n, &registry::withdraw>;
 
    /** Token Registry Management */
-   [[eosio::action]] void regtoken(const name&                      contract,
-                                   const name&                      issuer,
-                                   const asset&                     supply,
-                                   const std::vector<distribution>& distribution,
-                                   const asset&                     fee);
+   [[eosio::action]] void regtoken(const name&                                    contract,
+                                   const name&                                    issuer,
+                                   const asset&                                   supply,
+                                   const std::vector<antelope::token_allocation>& allocations,
+                                   const asset&                                   fee);
    using regtoken_action = eosio::action_wrapper<"regtoken"_n, &registry::regtoken>;
 
    [[eosio::action]] void addcontract(const name contract);
