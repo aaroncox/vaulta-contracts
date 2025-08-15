@@ -7,7 +7,7 @@ SRC_CONTRACT_NAME = api
 MAINNET_NODE_URL = https://eos.greymass.com
 MAINNET_CONTRACT_ACCOUNT = api
 TESTNET_NODE_URL = https://jungle4.greymass.com
-TESTNET_CONTRACT_ACCOUNT = api
+TESTNET_CONTRACT_ACCOUNT = api.gm
 
 INCLUDES = -I include -I ../../shared/include
 
@@ -27,7 +27,7 @@ clean:
 	rm -rf build
 
 testnet: build/debug
-	cleos -u $(TESTNET_NODE_URL) set contract $(MAINNET_CONTRACT_ACCOUNT) \
+	cleos -u $(TESTNET_NODE_URL) set contract $(TESTNET_CONTRACT_ACCOUNT) \
 		build/ ${SRC_CONTRACT_NAME}.wasm ${SRC_CONTRACT_NAME}.abi
 
 mainnet: build/production

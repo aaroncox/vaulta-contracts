@@ -159,7 +159,11 @@ registry::on_transfer(const name from, const name to, const asset quantity, cons
       transfer_act.send(get_self(), fee_config.receiver, payment, "token registration fee");
    }
 
-   // TODO: Call token creation on the defined contract
+   // Validate allocations
+   antelope::check_allocations(supply, allocations);
+
+   // Notify the token contract of the new token registration
+   require_recipient(contract);
 
    // Add the token to the registry
    add_token(issuer, contract, supply.symbol);

@@ -7,7 +7,7 @@ SRC_CONTRACT_NAME = registry
 MAINNET_NODE_URL = https://eos.greymass.com
 MAINNET_CONTRACT_ACCOUNT = registry
 TESTNET_NODE_URL = https://jungle4.greymass.com
-TESTNET_CONTRACT_ACCOUNT = registry
+TESTNET_CONTRACT_ACCOUNT = registry.gm
 
 INCLUDES = -I include -I ../../shared/include
 
@@ -27,7 +27,7 @@ clean:
 	rm -rf build
 
 testnet: build/debug
-	cleos -u $(TESTNET_NODE_URL) set contract $(MAINNET_CONTRACT_ACCOUNT) \
+	cleos -u $(TESTNET_NODE_URL) set contract $(TESTNET_CONTRACT_ACCOUNT) \
 		build/ ${SRC_CONTRACT_NAME}.wasm ${SRC_CONTRACT_NAME}.abi
 
 mainnet: build/production

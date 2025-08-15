@@ -3,6 +3,8 @@
 #include <eosio/asset.hpp>
 #include <eosio/eosio.hpp>
 
+#include <antelope/antelope.hpp>
+
 #include <string>
 
 // namespace eosiosystem {
@@ -186,6 +188,23 @@ public:
 
    typedef eosio::multi_index<"accounts"_n, account>    accounts;
    typedef eosio::multi_index<"stat"_n, currency_stats> stats;
+
+   /** Token Registry Management */
+
+   struct [[eosio::table("config")]] config_row
+   {
+      name registry; // account where the registry contract is deployed
+   };
+   typedef eosio::singleton<"config"_n, config_row> config_table;
+
+   [[eosio::action]] void setconfig(const name registry);
+   using setconfig_action = eosio::action_wrapper<"setconfig"_n, &tokens::setconfig>;
+
+   [[eosio::on_notify("*::regtoken")]] void register_token(const name&                                    contract,
+                                                           const name&                                    issuer,
+                                                           const asset&                                   supply,
+                                                           const std::vector<antelope::token_allocation>& allocations,
+                                                           const asset&                                   fee);
 
 private:
    void sub_balance(const name& owner, const asset& value);

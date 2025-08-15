@@ -36,6 +36,23 @@ build/tokens/debug:
 build/tokens/production:
 	make -C contracts/tokens build/production
 
+# TESTNET
+
+.PHONY: testnet
+testnet: testnet/api testnet/registry testnet/tokens
+
+.PHONY: testnet/api
+testnet/api:
+	make -C contracts/api testnet
+
+.PHONY: testnet/registry
+testnet/registry:
+	make -C contracts/registry testnet
+
+.PHONY: testnet/tokens
+testnet/tokens:
+	make -C contracts/tokens testnet
+
 # UNIT TESTS
 
 test/api: build/api/debug node_modules codegen
