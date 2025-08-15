@@ -124,11 +124,11 @@ registry::on_transfer(const name from, const name to, const asset quantity, cons
    transfer_act.send(get_self(), account, quantity, "");
 }
 
-[[eosio::action]] void registry::regtoken(const name&                      contract,
-                                          const name&                      issuer,
-                                          const asset&                     supply,
-                                          const std::vector<distribution>& distribution,
-                                          const asset&                     payment)
+[[eosio::action]] void registry::regtoken(const name&                                    contract,
+                                          const name&                                    issuer,
+                                          const asset&                                   supply,
+                                          const std::vector<antelope::token_allocation>& allocations,
+                                          const asset&                                   payment)
 {
    require_auth(issuer);
    auto config = get_config();

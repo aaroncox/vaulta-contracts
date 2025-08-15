@@ -36,6 +36,12 @@ struct token
    optional<token_distribution> distribution;
 };
 
+struct token_allocation
+{
+   name  receiver;
+   asset quantity;
+};
+
 struct token_balance
 {
    token token;
