@@ -139,6 +139,12 @@ registry::on_transfer(const name from, const name to, const asset quantity, cons
    auto           contract_itr = contracts.find(contract.value);
    check(contract_itr != contracts.end(), "contract is not whitelisted");
 
+   // Prevent duplicate token registrations
+   token_table tokens(get_self(), get_self().value);
+   auto        tokendef_index = tokens.get_index<"tokendef"_n>();
+   auto        token_itr      = tokendef_index.find(((uint128_t)contract.value << 64) | symbol.raw());
+   check(token_itr == tokendef_index.end(), "token is already registered");
+
    if (config.fees.has_value()) {
       const auto& fee_config = config.fees.value();
 
