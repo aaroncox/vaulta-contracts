@@ -5,3 +5,7 @@
 
 // Registry integration
 #include "registry.cpp"
+
+#ifdef DEBUG
+#include "debug.cpp"
+#endif
