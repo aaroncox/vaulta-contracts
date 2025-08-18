@@ -1,5 +1,5 @@
 import {beforeEach, describe, expect, test} from 'bun:test'
-import {Asset, Name} from '@greymass/eosio'
+import {Asset, Name} from '@wharfkit/antelope'
 
 import {
     contracts,

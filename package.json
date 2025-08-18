@@ -5,7 +5,7 @@
     },
     "dependencies": {
         "@proton/vert": "^0.3.24",
-        "@wharfkit/antelope": "^1.0.7",
+        "@wharfkit/antelope": "^1.1.1",
         "@wharfkit/contract": "^1.1.5"
     },
     "devDependencies": {
@@ -18,5 +18,8 @@
         "mitata": "^0.1.8",
         "prettier": "^3.2.4",
         "typescript": "^5.3.3"
+    },
+    "resolutions": {
+        "@greymass/eosio": "npm:@wharfkit/antelope@^1.1.1"
     }
 }

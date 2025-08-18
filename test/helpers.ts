@@ -1,12 +1,7 @@
 import {Blockchain} from '@proton/vert'
-import {Asset, Name, TimePointSec} from '@greymass/eosio'
+import {Asset, Name, TimePointSec} from '@wharfkit/antelope'
 
-import * as ApiContract from '../codegen/api.ts'
-import * as RegistryContract from '../codegen/registry.ts'
-import * as TokenContract from '../codegen/eosio.token.ts'
-
-export const api = ApiContract
-export const registry = RegistryContract
+import * as TokenContract from '../codegen/token.ts'
 
 export const blockchain = new Blockchain()
 export const alice = 'alice'
