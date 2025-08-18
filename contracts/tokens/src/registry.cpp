@@ -22,7 +22,8 @@ tokens::register_token(const name&                                    contract,
    auto         config = _config.get_or_default();
 
    // Ensure that the notification is coming from the registry contract
-   check(get_first_receiver() == config.registry, "regtoken can only be called from the registry contract");
+   auto calling_contract = get_first_receiver();
+   check(calling_contract == config.registry, "regtoken can only be called from the registry contract");
 
    // Create the token
    auto sym = supply.symbol;
@@ -41,7 +42,7 @@ tokens::register_token(const name&                                    contract,
       s.supply.symbol = supply.symbol;
       s.supply        = supply;
       s.max_supply    = supply;
-      s.issuer        = issuer;
+      s.issuer        = calling_contract;
    });
 
    // Perform the allocations

@@ -265,7 +265,7 @@ describe(`contract: ${registryContract}`, () => {
                     expect(statsTable).toHaveLength(1)
                     expect(statsTable[0].supply).toBe('1.0000 FOO')
                     expect(statsTable[0].max_supply).toBe('1.0000 FOO')
-                    expect(statsTable[0].issuer).toBe('alice')
+                    expect(statsTable[0].issuer).toBe(registryContract)
 
                     // Ensure the token was allocated correctly
                     const aliceAccountsTable = await contracts.tokens.tables
