@@ -11,7 +11,7 @@ void tokens::clear_table(T& table, uint64_t rows_to_clear)
 
 [[eosio::action]] void tokens::reset(const std::vector<symbol> testsymbols, const std::vector<name> testaccounts)
 {
-   //    require_auth(get_self());
+   require_auth(get_self());
 
    config_table _config(get_self(), get_self().value);
    _config.remove();
