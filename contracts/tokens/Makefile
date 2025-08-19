@@ -3,11 +3,11 @@ SHELL := /bin/bash
 TEST_FILES := $(shell find src -name '*.ts')
 BIN := ./node_modules/.bin
 
-SRC_CONTRACT_NAME = api
+SRC_CONTRACT_NAME = tokens
 MAINNET_NODE_URL = https://eos.greymass.com
-MAINNET_CONTRACT_ACCOUNT = api
+MAINNET_CONTRACT_ACCOUNT = tokens
 TESTNET_NODE_URL = https://jungle4.greymass.com
-TESTNET_CONTRACT_ACCOUNT = api.gm
+TESTNET_CONTRACT_ACCOUNT = tokens.gm
 
 INCLUDES = -I include -I ../../shared/include
 

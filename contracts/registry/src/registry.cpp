@@ -124,11 +124,11 @@ registry::on_transfer(const name from, const name to, const asset quantity, cons
    transfer_act.send(get_self(), account, quantity, "");
 }
 
-[[eosio::action]] void registry::regtoken(const name&                      contract,
-                                          const name&                      issuer,
-                                          const asset&                     supply,
-                                          const std::vector<distribution>& distribution,
-                                          const asset&                     payment)
+[[eosio::action]] void registry::regtoken(const name&                                    contract,
+                                          const name&                                    issuer,
+                                          const asset&                                   supply,
+                                          const std::vector<antelope::token_allocation>& allocations,
+                                          const asset&                                   payment)
 {
    require_auth(issuer);
    auto config = get_config();
@@ -138,6 +138,12 @@ registry::on_transfer(const name from, const name to, const asset quantity, cons
    contract_table contracts(get_self(), get_self().value);
    auto           contract_itr = contracts.find(contract.value);
    check(contract_itr != contracts.end(), "contract is not whitelisted");
+
+   // Prevent duplicate token registrations
+   token_table tokens(get_self(), get_self().value);
+   auto        tokendef_index = tokens.get_index<"tokendef"_n>();
+   auto        token_itr      = tokendef_index.find(((uint128_t)contract.value << 64) | supply.symbol.raw());
+   check(token_itr == tokendef_index.end(), "token is already registered");
 
    if (config.fees.has_value()) {
       const auto& fee_config = config.fees.value();
@@ -159,7 +165,11 @@ registry::on_transfer(const name from, const name to, const asset quantity, cons
       transfer_act.send(get_self(), fee_config.receiver, payment, "token registration fee");
    }
 
-   // TODO: Call token creation on the defined contract
+   // Validate allocations
+   antelope::check_allocations(supply, allocations);
+
+   // Notify the token contract of the new token registration
+   require_recipient(contract);
 
    // Add the token to the registry
    add_token(issuer, contract, supply.symbol);

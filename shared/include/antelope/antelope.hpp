@@ -36,10 +36,29 @@ struct token
    optional<token_distribution> distribution;
 };
 
+struct token_allocation
+{
+   name  receiver;
+   asset quantity;
+};
+
 struct token_balance
 {
    token token;
    asset balance;
 };
+
+static void check_allocations(const asset& supply, const std::vector<antelope::token_allocation>& allocations)
+{
+   asset total_allocation = asset(0, supply.symbol);
+   for (const auto& allocation : allocations) {
+      check(allocation.quantity.is_valid(), "invalid quantity");
+      check(allocation.quantity.amount > 0, "must issue positive quantity");
+      check(allocation.quantity.symbol.is_valid(), "invalid symbol name");
+      check(allocation.quantity.symbol == supply.symbol, "allocation symbol does not match supply symbol");
+      total_allocation += allocation.quantity;
+   }
+   check(total_allocation == supply, "invalid token distribution: total allocations must match the supply");
+}
 
 } // namespace antelope

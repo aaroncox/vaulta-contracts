@@ -1,5 +1,5 @@
 import {beforeEach, describe, expect, test} from 'bun:test'
-import {Asset} from '@greymass/eosio'
+import {Asset, Name} from '@wharfkit/antelope'
 
 import {
     contracts,
@@ -11,6 +11,7 @@ import {
     registryContract,
     resetContracts,
     setRegistryConfig,
+    tokensContract,
 } from '../helpers'
 
 describe(`contract: ${registryContract}`, () => {
@@ -188,7 +189,7 @@ describe(`contract: ${registryContract}`, () => {
                     const balance = getTokenBalance('alice')
                     expect(balance.equals(defaultInitialBalance)).toBeTrue()
 
-                    await contracts.registry.actions.addcontract(['eosio.token']).send()
+                    await contracts.registry.actions.addcontract([tokensContract]).send()
                     await contracts.registry.actions
                         .setconfig([
                             true,
@@ -225,13 +226,22 @@ describe(`contract: ${registryContract}`, () => {
 
                     // Register the token
                     await contracts.registry.actions
-                        .regtoken(['eosio.token', 'alice', '1.0000 FOO', [], '20.0000 A'])
+                        .regtoken([
+                            tokensContract,
+                            'alice',
+                            '1.0000 FOO',
+                            [
+                                {receiver: 'alice', quantity: '0.5000 FOO'},
+                                {receiver: 'bob', quantity: '0.5000 FOO'},
+                            ],
+                            '20.0000 A',
+                        ])
                         .send('alice')
 
                     // Ensure token registered correctly
                     const rows = await contracts.registry.tables.tokens().getTableRows()
                     expect(rows).toHaveLength(1)
-                    expect(rows[0].contract).toBe('eosio.token')
+                    expect(rows[0].contract).toBe('tokens')
                     expect(rows[0].symbol).toBe('4,FOO')
 
                     // Ensure contract balance deducted correctly
@@ -247,6 +257,27 @@ describe(`contract: ${registryContract}`, () => {
                             Asset.fromFloat(20, defaultSystemTokenSymbol).units
                         )
                     ).toBeTrue()
+
+                    // Ensure the token was created with correct supply
+                    const statsTable = await contracts.tokens.tables
+                        .stat(Asset.SymbolCode.from('FOO').value.value)
+                        .getTableRows()
+                    expect(statsTable).toHaveLength(1)
+                    expect(statsTable[0].supply).toBe('1.0000 FOO')
+                    expect(statsTable[0].max_supply).toBe('1.0000 FOO')
+                    expect(statsTable[0].issuer).toBe(registryContract)
+
+                    // Ensure the token was allocated correctly
+                    const aliceAccountsTable = await contracts.tokens.tables
+                        .accounts(Name.from('alice').value.value)
+                        .getTableRows()
+                    expect(aliceAccountsTable).toHaveLength(1)
+                    expect(aliceAccountsTable[0].balance).toBe('0.5000 FOO')
+                    const bobAccountsTable = await contracts.tokens.tables
+                        .accounts(Name.from('bob').value.value)
+                        .getTableRows()
+                    expect(bobAccountsTable).toHaveLength(1)
+                    expect(bobAccountsTable[0].balance).toBe('0.5000 FOO')
                 })
             })
             describe('error', () => {
@@ -323,7 +354,7 @@ describe(`contract: ${registryContract}`, () => {
                     expect(action).rejects.toThrow('eosio_assert: incorrect payment amount')
                 })
                 test('insufficient contract balance to pay fee', async () => {
-                    await contracts.registry.actions.addcontract(['eosio.token']).send()
+                    await contracts.registry.actions.addcontract(['tokens']).send()
                     await contracts.registry.actions
                         .setconfig([
                             true,
@@ -352,7 +383,7 @@ describe(`contract: ${registryContract}`, () => {
                     ).toBeTrue()
 
                     const action = contracts.registry.actions
-                        .regtoken(['eosio.token', 'alice', '1.0000 FOO', [], '20.0000 A'])
+                        .regtoken(['tokens', 'alice', '1.0000 FOO', [], '20.0000 A'])
                         .send('alice')
 
                     expect(action).rejects.toThrow(

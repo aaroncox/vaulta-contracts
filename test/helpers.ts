@@ -1,12 +1,7 @@
 import {Blockchain} from '@proton/vert'
-import {Asset, Name, TimePointSec} from '@greymass/eosio'
+import {Asset, Name, TimePointSec} from '@wharfkit/antelope'
 
-import * as ApiContract from '../codegen/api.ts'
-import * as RegistryContract from '../codegen/registry.ts'
-import * as TokenContract from '../codegen/eosio.token.ts'
-
-export const api = ApiContract
-export const registry = RegistryContract
+import * as TokenContract from '../codegen/token.ts'
 
 export const blockchain = new Blockchain()
 export const alice = 'alice'
@@ -19,9 +14,15 @@ export const defaultInitialBalance = Asset.fromFloat(1000, defaultSystemTokenSym
 
 export const apiContract = 'api'
 export const registryContract = 'registry'
+export const tokensContract = 'tokens'
 
 export const contracts = {
     api: blockchain.createContract(apiContract, `./contracts/api/build/api`, true),
+    faketoken: blockchain.createContract(
+        'fake.token',
+        './shared/include/eosio.token/eosio.token',
+        true
+    ),
     registry: blockchain.createContract(
         registryContract,
         `./contracts/registry/build/registry`,
@@ -32,11 +33,7 @@ export const contracts = {
         './shared/include/eosio.token/eosio.token',
         true
     ),
-    faketoken: blockchain.createContract(
-        'fake.token',
-        './shared/include/eosio.token/eosio.token',
-        true
-    ),
+    tokens: blockchain.createContract(tokensContract, './contracts/tokens/build/tokens', true),
 }
 
 export async function resetContracts() {
@@ -79,6 +76,7 @@ export async function resetContracts() {
 
     // Set base configuration for testing
     await setRegistryConfig()
+    await setTokensConfig()
 }
 
 export function advanceTime(seconds: number) {
@@ -100,6 +98,10 @@ export async function setRegistryConfig() {
             },
         ])
         .send()
+}
+
+export async function setTokensConfig() {
+    await contracts.tokens.actions.setconfig([registryContract]).send()
 }
 
 export function getTokenBalance(account: string) {

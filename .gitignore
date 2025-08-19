@@ -4,8 +4,4 @@ node_modules
 !include/**/*
 *.log
 .vscode
-package-lock.json
-bun.lock
-bun.lockb
-yarn.lock
 msig.json
