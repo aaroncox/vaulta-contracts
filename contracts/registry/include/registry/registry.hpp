@@ -10,10 +10,6 @@
 
 #include <string>
 
-// namespace eosiosystem {
-// class system_contract;
-// }
-
 using namespace eosio;
 
 namespace registry {
@@ -30,18 +26,20 @@ public:
       // The account that receives the fees
       name receiver;
 
-      // Fee for registering a token
+      // Fee for registering a token in the registry
       asset regtoken;
    };
 
    struct [[eosio::table("config")]] config_row
    {
+      // Whether or not the contract is enabled
       bool enabled = false;
 
-      // The system token definition for fees/deposits/withdrawals
+      // The system token definition defining the token used for fees/deposits/withdrawals
       antelope::token_definition systemtoken;
 
-      optional<fees> fees;
+      // The various fee structures
+      fees fees;
    };
    typedef eosio::singleton<"config"_n, config_row> config_table;
 
@@ -62,47 +60,54 @@ public:
 
    struct [[eosio::table("tokens")]] token_row
    {
-      uint64_t  id = uint64_t(-1);
-      name      contract;
-      symbol    symbol;
-      uint64_t  primary_key() const { return id; }
-      uint128_t by_tokendef() const { return ((uint128_t)contract.value << 64) | symbol.raw(); }
+      symbol_code    ticker;
+      name           creator;
+      optional<name> contract;
+      uint64_t       primary_key() const { return ticker.raw(); }
    };
-   typedef eosio::multi_index<
-      "tokens"_n,
-      token_row,
-      eosio::indexed_by<"tokendef"_n, eosio::const_mem_fun<token_row, uint128_t, &token_row::by_tokendef>>>
-      token_table;
+   typedef eosio::multi_index<"tokens"_n, token_row> token_table;
 
-   [[eosio::action]] void
-   setconfig(const bool enabled, const antelope::token_definition systemtoken, const optional<fees> fees);
+   /** Registry State Management */
+   [[eosio::action]] void enable();
+   using enable_action = eosio::action_wrapper<"enable"_n, &registry::enable>;
+
+   [[eosio::action]] void disable();
+   using disable_action = eosio::action_wrapper<"disable"_n, &registry::disable>;
+
+   [[eosio::action]] void setconfig(const antelope::token_definition& systemtoken, const fees& fees);
    using setconfig_action = eosio::action_wrapper<"setconfig"_n, &registry::setconfig>;
 
    /** Balance Management */
    [[eosio::on_notify("*::transfer")]] void
-   on_transfer(const name from, const name to, const asset quantity, const string memo);
+   on_transfer(const name& from, const name& to, const asset& quantity, const string& memo);
 
-   [[eosio::action]] void withdraw(const name account, const asset quantity);
+   [[eosio::action]] void withdraw(const name& account, const asset& quantity);
    using withdraw_action = eosio::action_wrapper<"withdraw"_n, &registry::withdraw>;
 
-   /** Token Registry Management */
-   [[eosio::action]] void regtoken(const name&                                    contract,
-                                   const name&                                    issuer,
-                                   const asset&                                   supply,
-                                   const std::vector<antelope::token_allocation>& allocations,
-                                   const asset&                                   fee);
+   [[eosio::action]] void openbalance(const name& account);
+   using openbalance_action = eosio::action_wrapper<"openbalance"_n, &registry::openbalance>;
+
+   [[eosio::action]] void closebalance(const name& account);
+   using closebalance_action = eosio::action_wrapper<"closebalance"_n, &registry::closebalance>;
+
+   /** Token Registration */
+   [[eosio::action]] void regtoken(const name& creator, const symbol_code& ticker, const asset& payment);
    using regtoken_action = eosio::action_wrapper<"regtoken"_n, &registry::regtoken>;
 
-   [[eosio::action]] void addcontract(const name contract);
+   [[eosio::action]] void setcontract(const symbol_code& ticker, const name& contract);
+   using setcontract_action = eosio::action_wrapper<"setcontract"_n, &registry::setcontract>;
+
+   /** Token Registry Admin */
+   [[eosio::action]] void addcontract(const name& contract);
    using addcontract_action = eosio::action_wrapper<"addcontract"_n, &registry::addcontract>;
 
-   [[eosio::action]] void addtoken(const name contract, const symbol symbol);
+   [[eosio::action]] void addtoken(const name& creator, const symbol_code& ticker);
    using addtoken_action = eosio::action_wrapper<"addtoken"_n, &registry::addtoken>;
 
-   [[eosio::action]] void rmcontract(const name contract);
+   [[eosio::action]] void rmcontract(const name& contract);
    using rmcontract_action = eosio::action_wrapper<"rmcontract"_n, &registry::rmcontract>;
 
-   [[eosio::action]] void rmtoken(const uint64_t id);
+   [[eosio::action]] void rmtoken(const symbol_code& ticker);
    using rmtoken_action = eosio::action_wrapper<"rmtoken"_n, &registry::rmtoken>;
 
 #ifdef DEBUG
@@ -115,16 +120,18 @@ private:
    void       require_enabled(const config_row& config) { check(config.enabled, "contract is disabled"); }
 
    /** Balance Management */
-   void  add_balance(const name account, const asset quantity);
-   asset get_balance(const name account, const config_row config);
-   void  remove_balance(const name account, const asset quantity);
+   void  add_balance(const name& account, const asset& quantity);
+   asset get_balance(const name& account, const symbol& token_symbol);
+   void  open_balance(const name& account);
+   void  close_balance(const name& account);
+   void  remove_balance(const name& account, const asset& quantity);
 
-   /** Token Registry Management */
-   void      add_token(const name issuer, const name contract, const symbol symbol);
-   void      add_token_contract(const name contract);
-   token_row get_token(const name contract, const symbol symbol);
-   void      remove_token(const uint64_t id);
-   void      remove_token_contract(const name contract);
+   /** Token Registry Admin */
+   void add_token(const symbol_code& ticker, const name& creator, const name& rampayer);
+   void add_token_contract(const name& contract);
+   void remove_token(const symbol_code& ticker);
+   void remove_token_contract(const name& contract);
+   // void      add_allocation(const name contract, const name receiver, const asset quantity, const name rampayer);
 
 #ifdef DEBUG
    template <typename T>

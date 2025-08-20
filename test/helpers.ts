@@ -87,7 +87,6 @@ export function advanceTime(seconds: number) {
 export async function setRegistryConfig() {
     await contracts.registry.actions
         .setconfig([
-            true,
             {
                 contract: defaultSystemTokenContract,
                 symbol: defaultSystemTokenSymbol,
@@ -98,6 +97,7 @@ export async function setRegistryConfig() {
             },
         ])
         .send()
+    await contracts.registry.actions.enable().send()
 }
 
 export async function setTokensConfig() {
