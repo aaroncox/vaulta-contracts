@@ -4,6 +4,7 @@
 #include <eosio/eosio.hpp>
 
 #include <antelope/antelope.hpp>
+#include <registry/registry.hpp>
 
 #include <string>
 
@@ -197,18 +198,35 @@ public:
    };
    typedef eosio::singleton<"config"_n, config_row> config_table;
 
+   // Temporary storage for token allocations
+   struct [[eosio::table("allocation")]] allocation_row
+   {
+      uint64_t    id;
+      symbol_code ticker;
+      name        receiver;
+      asset       quantity;
+
+      uint64_t primary_key() const { return id; }
+      uint64_t by_ticker() const { return ticker.raw(); }
+   };
+
+   typedef eosio::multi_index<
+      "allocations"_n,
+      allocation_row,
+      eosio::indexed_by<"byticker"_n, eosio::const_mem_fun<allocation_row, uint64_t, &allocation_row::by_ticker>>>
+      allocation_table;
+
    [[eosio::action]] void setconfig(const name registry);
    using setconfig_action = eosio::action_wrapper<"setconfig"_n, &tokens::setconfig>;
 
-   [[eosio::on_notify("*::regtoken")]] void register_token(const name&                                    contract,
-                                                           const name&                                    issuer,
-                                                           const asset&                                   supply,
-                                                           const std::vector<antelope::token_allocation>& allocations,
-                                                           const asset&                                   fee);
+   [[eosio::action]] void setsupply(const symbol_code& ticker, const asset& supply);
+   using setsupply_action = eosio::action_wrapper<"setsupply"_n, &tokens::setsupply>;
 
-   [[eosio::action]] void allocate(const name& issuer, const name& receiver, const asset& quantity);
-   using allocate_action = eosio::action_wrapper<"allocate"_n, &tokens::allocate>;
+   [[eosio::action]] void distribute(const symbol_code&                             ticker,
+                                     const std::vector<antelope::token_allocation>& allocations);
+   using distribute_action = eosio::action_wrapper<"distribute"_n, &tokens::distribute>;
 
+   registry::registry::token_row get_token(const config_row& config, const symbol_code& ticker);
 #ifdef DEBUG
    [[eosio::action]] void reset(const std::vector<eosio::symbol> testsymbols, const std::vector<name> testaccounts);
 #endif

@@ -53,7 +53,7 @@ static void check_allocations(const asset& supply, const std::vector<antelope::t
    asset total_allocation = asset(0, supply.symbol);
    for (const auto& allocation : allocations) {
       check(allocation.quantity.is_valid(), "invalid quantity");
-      check(allocation.quantity.amount > 0, "must issue positive quantity");
+      check(allocation.quantity.amount > 0, "must allocate an amount greater than zero");
       check(allocation.quantity.symbol.is_valid(), "invalid symbol name");
       check(allocation.quantity.symbol == supply.symbol, "allocation symbol does not match supply symbol");
       total_allocation += allocation.quantity;

@@ -1,4 +1,4 @@
-import {Blockchain} from '@proton/vert'
+import {Blockchain} from '@vaulta/vert'
 import {Asset, Name, TimePointSec} from '@wharfkit/antelope'
 
 import * as TokenContract from '../codegen/token.ts'
@@ -97,6 +97,7 @@ export async function setRegistryConfig() {
             },
         ])
         .send()
+    await contracts.registry.actions.addcontract([tokensContract]).send()
     await contracts.registry.actions.enable().send()
 }
 
