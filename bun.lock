@@ -4,7 +4,7 @@
     "": {
       "dependencies": {
         "@vaulta/bolt": "^2.0.0",
-        "@vaulta/vert": "^2.0.0",
+        "@vaulta/vert": "^2.1.1",
         "@wharfkit/antelope": "^1.1.1",
         "@wharfkit/contract": "^1.1.5",
       },
@@ -90,7 +90,7 @@
 
     "@vaulta/bolt": ["@vaulta/bolt@2.0.0", "", { "dependencies": { "@vaulta/vert": "^1.2.3", "@wharfkit/contract": "^1.2.1", "@wharfkit/session": "^1.6.0", "@wharfkit/transact-plugin-resource-provider": "^1.1.2", "@wharfkit/wallet-plugin-privatekey": "^1.1.0", "axios": "^1.11.0", "commander": "^14.0.0", "dotenv": "^16.6.1", "figlet": "^1.7.0", "glob": "^10.4.5", "mocha": "^10.2.0", "ws": "^8.16.0" }, "bin": { "bolt": "src/index.js" } }, "sha512-4s2s3qfvbTaof8yfKDJ+f5fUV4PsIpUqmvEzJY5WRn3TXM/Wdgg67xWMRbaJvbxXs0MbhhqY2ZQo/HtTi3hBMA=="],
 
-    "@vaulta/vert": ["@vaulta/vert@2.0.0", "", { "dependencies": { "@ethereumjs/util": "^8.0.0-beta.1", "@wharfkit/antelope": "^1.1.1", "bn.js": "^5.2.0", "brorand": "^1.1.0", "chai": "^4.3.6", "colors": "^1.4.0", "cross-fetch": "^3.1.5", "elliptic": "^6.5.4", "hash.js": "^1.1.7", "js-sha3": "^0.8.0", "json-diff": "^0.9.0", "json-diff-ts": "^1.2.4", "lodash": "^4.17.21", "loglevel": "^1.8.0", "loglevel-plugin-prefix": "^0.8.4", "rustbn.js": "^0.2.0", "sorted-btree": "^1.6.0" } }, "sha512-RpCse5OUfIV1V/nbnWRu6hXGP0NI/5U6wPoOhtO5xueiHSdNxSHm6wnvZUZfsjwQyoe519NXXWotekH2YhR8KA=="],
+    "@vaulta/vert": ["@vaulta/vert@2.1.1", "", { "dependencies": { "@ethereumjs/util": "^8.0.0-beta.1", "@wharfkit/antelope": "^1.1.1", "bn.js": "^5.2.0", "brorand": "^1.1.0", "chai": "^4.3.6", "colors": "^1.4.0", "cross-fetch": "^3.1.5", "elliptic": "^6.5.4", "hash.js": "^1.1.7", "js-sha3": "^0.8.0", "json-diff": "^0.9.0", "json-diff-ts": "^1.2.4", "lodash": "^4.17.21", "loglevel": "^1.8.0", "loglevel-plugin-prefix": "^0.8.4", "rustbn.js": "^0.2.0", "sorted-btree": "^1.6.0" } }, "sha512-w/SZXrrDSOqsZUIE2rZMwMYXGFTNhnOMW9IDDYGPiNd3GQ3x/IKHdDtVJytglL9spPFLZRRYNyjZBtV1DVH6Yg=="],
 
     "@wharfkit/abicache": ["@wharfkit/abicache@1.2.2", "", { "dependencies": { "@wharfkit/antelope": "^1.0.2", "@wharfkit/signing-request": "^3.1.0", "pako": "^2.0.4", "tslib": "^2.1.0" } }, "sha512-yOsYz2qQpQy7Nb8XZj62pZqp8YnmWDqFlrenYksBb9jl+1aWIpFhWd+14VEez4tUAezRH4UWW+w1SX5vhmUY9A=="],
 
