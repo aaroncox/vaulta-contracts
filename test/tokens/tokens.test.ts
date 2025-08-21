@@ -268,8 +268,7 @@ describe(`contract: ${tokensContract}`, () => {
                 const contractBalance = await contracts.tokens.tables
                     .accounts(Name.from(tokensContract).value.value)
                     .getTableRows()
-                expect(contractBalance).toHaveLength(1)
-                expect(contractBalance[0].balance).toBe('0.0000 FOO')
+                expect(contractBalance).toHaveLength(0)
 
                 const aliceBalance = await contracts.tokens.tables
                     .accounts(Name.from(alice).value.value)
@@ -511,6 +510,7 @@ describe(`contract: ${tokensContract}`, () => {
                     ])
                     .send(alice)
 
+                await contracts.tokens.actions.open([tokensContract, '4,FOO', alice]).send(alice)
                 expect(
                     contracts.tokens.actions
                         .distribute([

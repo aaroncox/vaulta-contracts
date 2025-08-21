@@ -62,6 +62,9 @@ registry::registry::token_row tokens::get_token(const config_row& config, const 
       transfer_action transfer_act{get_self(), {{get_self(), eosiosystem::system_contract::active_permission}}};
       transfer_act.send(get_self(), allocation.receiver, allocation.quantity, "initial token allocation");
    }
+
+   close_action close_act{get_self(), {{get_self(), eosiosystem::system_contract::active_permission}}};
+   close_act.send(get_self(), stat_itr->supply.symbol);
 }
 
 [[eosio::action]] void tokens::setsupply(const symbol_code& ticker, const asset& supply)
