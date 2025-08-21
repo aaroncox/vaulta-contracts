@@ -12,6 +12,15 @@ namespace tokens {
    _config.set(config, get_self());
 }
 
+registry::registry::token_row tokens::get_token(const config_row& config, const symbol_code& ticker)
+{
+   check(config.registry.value != 0, "registry contract not set");
+   registry::registry::token_table tokens(config.registry, config.registry.value);
+   auto                            token_itr = tokens.find(ticker.raw());
+   check(token_itr != tokens.end(), "token is not registered in registry contract");
+   return *token_itr;
+}
+
 [[eosio::action]] void tokens::distribute(const symbol_code&                             ticker,
                                           const std::vector<antelope::token_allocation>& allocations)
 {
@@ -22,6 +31,7 @@ namespace tokens {
 
    // Retrieve the token from the registry contract
    auto token = get_token(config, ticker);
+   check(token.contract == get_self(), "token is not registered to this contract");
 
    require_auth(token.creator);
 
@@ -54,15 +64,6 @@ namespace tokens {
    }
 }
 
-registry::registry::token_row tokens::get_token(const config_row& config, const symbol_code& ticker)
-{
-   check(config.registry.value != 0, "registry contract not set");
-   registry::registry::token_table tokens(config.registry, config.registry.value);
-   auto                            token_itr = tokens.find(ticker.raw());
-   check(token_itr != tokens.end(), "token is not registered in registry contract");
-   return *token_itr;
-}
-
 [[eosio::action]] void tokens::setsupply(const symbol_code& ticker, const asset& supply)
 {
    check(ticker == supply.symbol.code(), "ticker must match supply symbol");
@@ -72,6 +73,7 @@ registry::registry::token_row tokens::get_token(const config_row& config, const 
 
    // Retrieve the token from the registry contract
    auto token = get_token(config, ticker);
+   check(token.contract == get_self(), "token is not registered to this contract");
 
    require_auth(token.creator);
 
