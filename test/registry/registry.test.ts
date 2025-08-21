@@ -392,6 +392,76 @@ describe(`contract: ${registryContract}`, () => {
                 })
             })
         })
+        describe('action: setcontract', () => {
+            describe('success', () => {
+                test('set token contract', async () => {
+                    await contracts.token.actions
+                        .transfer([alice, registryContract, '50.0000 A', ''])
+                        .send(alice)
+                    await contracts.registry.actions
+                        .regtoken([alice, 'FOO', '1.0000 A'])
+                        .send(alice)
+                    await contracts.registry.actions
+                        .setcontract(['FOO', tokensContract])
+                        .send(alice)
+                    const rows = await contracts.registry.tables.tokens().getTableRows()
+                    expect(rows).toHaveLength(1)
+                    const token = rows[0]
+                    expect(token.contract).toBe(tokensContract)
+                    expect(token.ticker).toBe('FOO')
+                    expect(token.creator).toBe(alice)
+                })
+            })
+            describe('error', () => {
+                test('requires auth of creator', async () => {
+                    await contracts.token.actions
+                        .transfer([alice, registryContract, '50.0000 A', ''])
+                        .send(alice)
+                    await contracts.registry.actions
+                        .regtoken([alice, 'FOO', '1.0000 A'])
+                        .send(alice)
+                    const action = contracts.registry.actions
+                        .setcontract(['FOO', tokensContract])
+                        .send(bob)
+                    expect(action).rejects.toThrow('missing required authority alice')
+                })
+                test('cannot call on non-existing token', async () => {
+                    const action = contracts.registry.actions
+                        .setcontract(['FOO', tokensContract])
+                        .send(alice)
+                    expect(action).rejects.toThrow('eosio_assert: token is not registered')
+                })
+                test('cannot call twice on the same token', async () => {
+                    await contracts.token.actions
+                        .transfer([alice, registryContract, '50.0000 A', ''])
+                        .send(alice)
+                    await contracts.registry.actions
+                        .regtoken([alice, 'FOO', '1.0000 A'])
+                        .send(alice)
+                    await contracts.registry.actions
+                        .setcontract(['FOO', tokensContract])
+                        .send(alice)
+                    const action = contracts.registry.actions
+                        .setcontract(['FOO', tokensContract])
+                        .send(alice)
+                    expect(action).rejects.toThrow(
+                        'eosio_assert: token contract has already been set'
+                    )
+                })
+                test('cannot set contract if not whitelisted', async () => {
+                    await contracts.token.actions
+                        .transfer([alice, registryContract, '50.0000 A', ''])
+                        .send(alice)
+                    await contracts.registry.actions
+                        .regtoken([alice, 'FOO', '1.0000 A'])
+                        .send(alice)
+                    const action = contracts.registry.actions
+                        .setcontract(['FOO', 'foo.token'])
+                        .send(alice)
+                    expect(action).rejects.toThrow('eosio_assert: contract is not whitelisted')
+                })
+            })
+        })
     })
 
     describe('admin', () => {
@@ -580,76 +650,6 @@ describe(`contract: ${registryContract}`, () => {
                     await contracts.registry.actions.addtoken([alice, 'EOS']).send()
                     const action = contracts.registry.actions.addtoken([alice, 'EOS']).send()
                     expect(action).rejects.toThrow('eosio_assert: token is already registered')
-                })
-            })
-        })
-        describe('action: setcontract', () => {
-            describe('success', () => {
-                test('set token contract', async () => {
-                    await contracts.token.actions
-                        .transfer([alice, registryContract, '50.0000 A', ''])
-                        .send(alice)
-                    await contracts.registry.actions
-                        .regtoken([alice, 'FOO', '1.0000 A'])
-                        .send(alice)
-                    await contracts.registry.actions
-                        .setcontract(['FOO', tokensContract])
-                        .send(alice)
-                    const rows = await contracts.registry.tables.tokens().getTableRows()
-                    expect(rows).toHaveLength(1)
-                    const token = rows[0]
-                    expect(token.contract).toBe(tokensContract)
-                    expect(token.ticker).toBe('FOO')
-                    expect(token.creator).toBe(alice)
-                })
-            })
-            describe('error', () => {
-                test('requires auth of creator', async () => {
-                    await contracts.token.actions
-                        .transfer([alice, registryContract, '50.0000 A', ''])
-                        .send(alice)
-                    await contracts.registry.actions
-                        .regtoken([alice, 'FOO', '1.0000 A'])
-                        .send(alice)
-                    const action = contracts.registry.actions
-                        .setcontract(['FOO', tokensContract])
-                        .send(bob)
-                    expect(action).rejects.toThrow('missing required authority alice')
-                })
-                test('cannot call on non-existing token', async () => {
-                    const action = contracts.registry.actions
-                        .setcontract(['FOO', tokensContract])
-                        .send(alice)
-                    expect(action).rejects.toThrow('eosio_assert: token is not registered')
-                })
-                test('cannot call twice on the same token', async () => {
-                    await contracts.token.actions
-                        .transfer([alice, registryContract, '50.0000 A', ''])
-                        .send(alice)
-                    await contracts.registry.actions
-                        .regtoken([alice, 'FOO', '1.0000 A'])
-                        .send(alice)
-                    await contracts.registry.actions
-                        .setcontract(['FOO', tokensContract])
-                        .send(alice)
-                    const action = contracts.registry.actions
-                        .setcontract(['FOO', tokensContract])
-                        .send(alice)
-                    expect(action).rejects.toThrow(
-                        'eosio_assert: token contract has already been set'
-                    )
-                })
-                test('cannot set contract if not whitelisted', async () => {
-                    await contracts.token.actions
-                        .transfer([alice, registryContract, '50.0000 A', ''])
-                        .send(alice)
-                    await contracts.registry.actions
-                        .regtoken([alice, 'FOO', '1.0000 A'])
-                        .send(alice)
-                    const action = contracts.registry.actions
-                        .setcontract(['FOO', 'foo.token'])
-                        .send(alice)
-                    expect(action).rejects.toThrow('eosio_assert: contract is not whitelisted')
                 })
             })
         })
