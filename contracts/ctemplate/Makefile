@@ -9,7 +9,7 @@ MAINNET_CONTRACT_ACCOUNT = ctemplate
 TESTNET_NODE_URL = https://jungle4.greymass.com
 TESTNET_CONTRACT_ACCOUNT = ctemplate.gm
 
-INCLUDES = -I include -I ../../shared/include -I ../registry/include
+INCLUDES = -I include -I ../../shared/include
 
 build: | build/dir
 	cdt-cpp -O=2 -abigen -abigen_output=build/${SRC_CONTRACT_NAME}.abi -o build/${SRC_CONTRACT_NAME}.wasm src/${SRC_CONTRACT_NAME}.cpp -R src ${INCLUDES} -D DEBUG
