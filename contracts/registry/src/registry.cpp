@@ -122,6 +122,7 @@ registry::on_transfer(const name& from, const name& to, const asset& quantity, c
 
    check(get_first_receiver() == config.systemtoken.contract, "Incorrect token contract for deposit.");
    check(quantity.symbol == config.systemtoken.symbol, "Incorrect token symbol for deposit.");
+   check(quantity.amount > 0, "Token quantity must be positive.");
 
    add_balance(from, quantity);
 }
