@@ -45,20 +45,21 @@ describe(`contract: ${apiContract}`, () => {
         })
         describe('error', () => {
             test('require contract auth', async () => {
-                const action = contracts.api.actions
-                    .setconfig([
-                        '73e4385a2708e6d7048834fbc1079f2fabb17b3c125b146af438971e90716c4d',
-                        'foo',
-                        'foo.msig',
-                        'foo.token',
-                        '4,FOO',
-                        '4,RAMCORE',
-                        '4,RAM',
-                        '4,REX',
-                        true,
-                    ])
-                    .send('alice')
-                expect(action).rejects.toThrow('missing required authority api')
+                expect(
+                    contracts.api.actions
+                        .setconfig([
+                            '73e4385a2708e6d7048834fbc1079f2fabb17b3c125b146af438971e90716c4d',
+                            'foo',
+                            'foo.msig',
+                            'foo.token',
+                            '4,FOO',
+                            '4,RAMCORE',
+                            '4,RAM',
+                            '4,REX',
+                            true,
+                        ])
+                        .send('alice')
+                ).rejects.toThrow('missing required authority api')
             })
         })
     })

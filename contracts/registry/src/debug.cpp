@@ -26,6 +26,12 @@ void registry::clear_table(T& table, uint64_t rows_to_clear)
    while (contracts_itr != contracts.end()) {
       contracts_itr = contracts.erase(contracts_itr);
    }
+
+   balance_table balances(get_self(), get_self().value);
+   auto          balances_itr = balances.begin();
+   while (balances_itr != balances.end()) {
+      balances_itr = balances.erase(balances_itr);
+   }
 }
 
 } // namespace registry

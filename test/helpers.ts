@@ -1,4 +1,4 @@
-import {Blockchain} from '@proton/vert'
+import {Blockchain} from '@vaulta/vert'
 import {Asset, Name, TimePointSec} from '@wharfkit/antelope'
 
 import * as TokenContract from '../codegen/token.ts'
@@ -87,17 +87,21 @@ export function advanceTime(seconds: number) {
 export async function setRegistryConfig() {
     await contracts.registry.actions
         .setconfig([
-            true,
             {
-                contract: defaultSystemTokenContract,
-                symbol: defaultSystemTokenSymbol,
-            },
-            {
+                token: {
+                    contract: defaultSystemTokenContract,
+                    symbol: defaultSystemTokenSymbol,
+                },
                 receiver: defaultFeesAccount,
                 regtoken: Asset.fromFloat(1, defaultSystemTokenSymbol),
             },
+            {
+                minimum_ticker_length: 1,
+            },
         ])
         .send()
+    await contracts.registry.actions.addcontract([tokensContract]).send()
+    await contracts.registry.actions.enable().send()
 }
 
 export async function setTokensConfig() {

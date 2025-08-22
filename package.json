@@ -4,7 +4,8 @@
         "test": "make test"
     },
     "dependencies": {
-        "@proton/vert": "^0.3.24",
+        "@vaulta/bolt": "^2.0.0",
+        "@vaulta/vert": "^2.1.1",
         "@wharfkit/antelope": "^1.1.1",
         "@wharfkit/contract": "^1.1.5"
     },
@@ -18,8 +19,5 @@
         "mitata": "^0.1.8",
         "prettier": "^3.2.4",
         "typescript": "^5.3.3"
-    },
-    "resolutions": {
-        "@greymass/eosio": "npm:@wharfkit/antelope@^1.1.1"
     }
 }

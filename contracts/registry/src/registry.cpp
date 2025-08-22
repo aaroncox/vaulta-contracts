@@ -10,42 +10,61 @@ registry::config_row registry::get_config()
 
 bool registry::is_enabled() { return get_config().enabled; }
 
-void registry::add_balance(const name account, const asset quantity)
+void registry::open_balance(const name& account)
+{
+   balance_table balances(get_self(), get_self().value);
+   auto          balance_itr = balances.find(account.value);
+   check(balance_itr == balances.end(), "balance already exists for account");
+   balances.emplace(account, [&](auto& b) {
+      b.account = account;
+      b.balance = asset(0, get_config().fees.token.symbol);
+   });
+}
+
+void registry::close_balance(const name& account)
+{
+   balance_table balances(get_self(), get_self().value);
+   auto          balance_itr = balances.find(account.value);
+   check(balance_itr != balances.end(), "no balance for account to close");
+   check(balance_itr->balance.amount == 0, "cannot close balance with non-zero amount");
+   balances.erase(balance_itr);
+}
+
+void registry::add_balance(const name& account, const asset& quantity)
 {
    balance_table balances(get_self(), get_self().value);
    auto          balance_itr = balances.find(account.value);
    if (balance_itr != balances.end()) {
       balances.modify(balance_itr, same_payer, [&](auto& b) { b.balance += quantity; });
    } else {
-      balances.emplace(get_self(), [&](auto& b) {
+      balances.emplace(account, [&](auto& b) {
          b.account = account;
          b.balance = quantity;
       });
    }
 }
 
-void registry::add_token(const name rampayer, const name contract, const symbol symbol)
+void registry::add_token(const symbol_code& ticker, const name& creator, const name& rampayer)
 {
    token_table tokens(get_self(), get_self().value);
    tokens.emplace(rampayer, [&](auto& row) {
-      row.id       = tokens.available_primary_key();
-      row.contract = contract;
-      row.symbol   = symbol;
+      row.ticker  = ticker;
+      row.creator = creator;
    });
 }
 
-asset registry::get_balance(const name account, const config_row config)
+asset registry::get_balance(const name& account, const symbol& token_symbol)
 {
    balance_table balances(get_self(), get_self().value);
    auto          balance_itr = balances.find(account.value);
    if (balance_itr != balances.end()) {
       return balance_itr->balance;
    } else {
-      return asset(0, config.systemtoken.symbol);
+      return asset(0, token_symbol);
    }
 }
 
-void registry::remove_balance(const name account, const asset quantity)
+void registry::remove_balance(const name& account, const asset& quantity)
 {
    balance_table balances(get_self(), get_self().value);
    auto          balance_itr = balances.find(account.value);
@@ -59,20 +78,20 @@ void registry::remove_balance(const name account, const asset quantity)
    }
 }
 
-void registry::remove_token(const uint64_t id)
+void registry::remove_token(const symbol_code& ticker)
 {
    token_table tokens(get_self(), get_self().value);
-   auto&       token = tokens.get(id, "token not found");
+   auto&       token = tokens.get(ticker.raw(), "token not found");
    tokens.erase(token);
 }
 
-void registry::add_token_contract(const name contract)
+void registry::add_token_contract(const name& contract)
 {
    contract_table contracts(get_self(), get_self().value);
    contracts.emplace(get_self(), [&](auto& row) { row.account = contract; });
 }
 
-void registry::remove_token_contract(const name contract)
+void registry::remove_token_contract(const name& contract)
 {
    contract_table contracts(get_self(), get_self().value);
    auto           itr = contracts.find(contract.value);
@@ -81,7 +100,7 @@ void registry::remove_token_contract(const name contract)
 }
 
 [[eosio::on_notify("*::transfer")]] void
-registry::on_transfer(const name from, const name to, const asset quantity, const string memo)
+registry::on_transfer(const name& from, const name& to, const asset& quantity, const string& memo)
 {
    // ignore RAM sales
    // ignore transfers not sent to this contract
@@ -101,91 +120,90 @@ registry::on_transfer(const name from, const name to, const asset quantity, cons
    auto config = get_config();
    require_enabled(config);
 
-   check(get_first_receiver() == config.systemtoken.contract, "Incorrect token contract for deposit.");
-   check(quantity.symbol == config.systemtoken.symbol, "Incorrect token symbol for deposit.");
+   check(get_first_receiver() == config.fees.token.contract, "Incorrect token contract for deposit.");
+   check(quantity.symbol == config.fees.token.symbol, "Incorrect token symbol for deposit.");
+   check(quantity.amount > 0, "Token quantity must be positive.");
 
    add_balance(from, quantity);
 }
 
-[[eosio::action]] void registry::withdraw(const name account, const asset quantity)
+[[eosio::action]] void registry::withdraw(const name& account, const asset& quantity)
 {
    require_auth(account);
 
    auto config = get_config();
    require_enabled(config);
 
-   check(quantity.symbol == config.systemtoken.symbol, "Incorrect token symbol for withdraw.");
-
+   check(quantity.symbol == config.fees.token.symbol, "Incorrect token symbol for withdraw.");
+   check(quantity.amount > 0, "Token quantity must be positive.");
    remove_balance(account, quantity);
 
    // Send the tokens
-   token::transfer_action transfer_act{config.systemtoken.contract,
+   token::transfer_action transfer_act{config.fees.token.contract,
                                        {{get_self(), eosiosystem::system_contract::active_permission}}};
    transfer_act.send(get_self(), account, quantity, "");
 }
 
-[[eosio::action]] void registry::regtoken(const name&                                    contract,
-                                          const name&                                    issuer,
-                                          const asset&                                   supply,
-                                          const std::vector<antelope::token_allocation>& allocations,
-                                          const asset&                                   payment)
+[[eosio::action]] void registry::regtoken(const name& creator, const symbol_code& ticker, const asset& payment)
 {
-   require_auth(issuer);
+   require_auth(creator);
    auto config = get_config();
    require_enabled(config);
 
-   // Verify that the contract is whitelisted
+   // Ensure the ticker meets the minimum length requirement
+   check(ticker.length() >= config.regtoken.minimum_ticker_length, "token ticker is too short");
+
+   // Prevent duplicate token registrations
+   token_table tokens(get_self(), get_self().value);
+   auto        token_itr = tokens.find(ticker.raw());
+   check(token_itr == tokens.end(), "token is already registered");
+
+   // Verify payment values
+   check(payment.symbol == config.fees.token.symbol, "incorrect payment symbol");
+   check(payment.amount == config.fees.regtoken.amount, "incorrect payment amount");
+
+   // Verify contract balance to pay fee
+   asset contract_balance = get_balance(creator, config.fees.token.symbol);
+   check(contract_balance.amount >= payment.amount, "insufficient contract balance to pay registration fee");
+
+   // Remove fee from contract balance
+   remove_balance(creator, payment);
+
+   // Transfer fee to receiver
+   token::transfer_action transfer_act{config.fees.token.contract,
+                                       {{get_self(), eosiosystem::system_contract::active_permission}}};
+   transfer_act.send(get_self(), config.fees.receiver, payment, "token registration fee");
+
+   // Add the token to the registry
+   add_token(ticker, creator, creator);
+}
+
+[[eosio::action]] void registry::setcontract(const symbol_code& ticker, const name& contract)
+{
+   token_table tokens(get_self(), get_self().value);
+   auto        token_itr = tokens.find(ticker.raw());
+   check(token_itr != tokens.end(), "token is not registered");
+   require_auth(token_itr->creator);
+
+   // Ensure the contract is whitelisted
    contract_table contracts(get_self(), get_self().value);
    auto           contract_itr = contracts.find(contract.value);
    check(contract_itr != contracts.end(), "contract is not whitelisted");
 
-   // Prevent duplicate token registrations
-   token_table tokens(get_self(), get_self().value);
-   auto        tokendef_index = tokens.get_index<"tokendef"_n>();
-   auto        token_itr      = tokendef_index.find(((uint128_t)contract.value << 64) | supply.symbol.raw());
-   check(token_itr == tokendef_index.end(), "token is already registered");
-
-   if (config.fees.has_value()) {
-      const auto& fee_config = config.fees.value();
-
-      // Verify payment values
-      check(payment.symbol == config.systemtoken.symbol, "incorrect payment symbol");
-      check(payment.amount == fee_config.regtoken.amount, "incorrect payment amount");
-
-      // Verify contract balance to pay fee
-      asset contract_balance = get_balance(issuer, config);
-      check(contract_balance.amount >= payment.amount, "insufficient contract balance to pay registration fee");
-
-      // Remove fee from contract balance
-      remove_balance(issuer, payment);
-
-      // Transfer fee to receiver
-      token::transfer_action transfer_act{config.systemtoken.contract,
-                                          {{get_self(), eosiosystem::system_contract::active_permission}}};
-      transfer_act.send(get_self(), fee_config.receiver, payment, "token registration fee");
-   }
-
-   // Validate allocations
-   antelope::check_allocations(supply, allocations);
-
-   // Notify the token contract of the new token registration
-   require_recipient(contract);
-
-   // Add the token to the registry
-   add_token(issuer, contract, supply.symbol);
+   check(token_itr->contract->value == 0, "token contract has already been set");
+   tokens.modify(token_itr, same_payer, [&](auto& row) { row.contract = contract; });
 }
 
-[[eosio::action]] void registry::addtoken(const name contract, const symbol symbol)
+[[eosio::action]] void registry::addtoken(const name& creator, const symbol_code& ticker)
 {
    require_auth(get_self());
    token_table tokens(get_self(), get_self().value);
-   auto        tokendef_index = tokens.get_index<"tokendef"_n>();
-   auto        token_itr      = tokendef_index.find(((uint128_t)contract.value << 64) | symbol.raw());
-   check(token_itr == tokendef_index.end(), "token is already registered");
-   add_token(get_self(), contract, symbol);
+   auto        token_itr = tokens.find(ticker.raw());
+   check(token_itr == tokens.end(), "token is already registered");
+   add_token(ticker, creator, get_self());
 }
 
-[[eosio::action]] void registry::addcontract(const name contract)
+[[eosio::action]] void registry::addcontract(const name& contract)
 {
    require_auth(get_self());
    contract_table contracts(get_self(), get_self().value);
@@ -194,29 +212,59 @@ registry::on_transfer(const name from, const name to, const asset quantity, cons
    add_token_contract(contract);
 }
 
-[[eosio::action]] void registry::rmtoken(const uint64_t id)
+[[eosio::action]] void registry::rmtoken(const symbol_code& ticker)
 {
    require_auth(get_self());
-   remove_token(id);
+   remove_token(ticker);
 }
 
-[[eosio::action]] void registry::rmcontract(const name contract)
+[[eosio::action]] void registry::rmcontract(const name& contract)
 {
    require_auth(get_self());
    remove_token_contract(contract);
 }
 
-[[eosio::action]] void
-registry::setconfig(const bool enabled, const antelope::token_definition systemtoken, const optional<fees> fees)
+[[eosio::action]] void registry::openbalance(const name& account)
+{
+   require_auth(account);
+   open_balance(account);
+}
+
+[[eosio::action]] void registry::closebalance(const name& account)
+{
+   require_auth(account);
+   close_balance(account);
+}
+
+[[eosio::action]] void registry::setconfig(const fees& fees, const regtoken_config& regtoken)
 {
    require_auth(get_self());
    config_table _config(get_self(), get_self().value);
    auto         config = _config.get_or_default();
-   config.enabled      = enabled;
-   config.systemtoken  = systemtoken;
-   if (fees.has_value()) {
-      config.fees = fees.value();
-   }
+   config.fees         = fees;
+   config.regtoken     = regtoken;
+   _config.set(config, get_self());
+}
+
+[[eosio::action]] void registry::enable()
+{
+   require_auth(get_self());
+   config_table _config(get_self(), get_self().value);
+   auto         config = _config.get_or_default();
+   check(config.fees.token.symbol.is_valid(), "fees.token symbol must be set");
+   check(config.fees.token.contract.value != 0, "fees.token contract must be set");
+   check(config.fees.receiver.value != 0, "fees receiver must be set");
+   check(config.fees.regtoken.amount > 0, "fees regtoken must be greater than 0");
+   config.enabled = true;
+   _config.set(config, get_self());
+}
+
+[[eosio::action]] void registry::disable()
+{
+   require_auth(get_self());
+   config_table _config(get_self(), get_self().value);
+   auto         config = _config.get_or_default();
+   config.enabled      = false;
    _config.set(config, get_self());
 }
 
