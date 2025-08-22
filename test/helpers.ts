@@ -88,12 +88,15 @@ export async function setRegistryConfig() {
     await contracts.registry.actions
         .setconfig([
             {
-                contract: defaultSystemTokenContract,
-                symbol: defaultSystemTokenSymbol,
-            },
-            {
+                token: {
+                    contract: defaultSystemTokenContract,
+                    symbol: defaultSystemTokenSymbol,
+                },
                 receiver: defaultFeesAccount,
                 regtoken: Asset.fromFloat(1, defaultSystemTokenSymbol),
+            },
+            {
+                minimum_ticker_length: 1,
             },
         ])
         .send()

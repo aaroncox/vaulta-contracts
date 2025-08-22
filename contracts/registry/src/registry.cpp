@@ -17,7 +17,7 @@ void registry::open_balance(const name& account)
    check(balance_itr == balances.end(), "balance already exists for account");
    balances.emplace(account, [&](auto& b) {
       b.account = account;
-      b.balance = asset(0, get_config().systemtoken.symbol);
+      b.balance = asset(0, get_config().fees.token.symbol);
    });
 }
 
@@ -120,8 +120,8 @@ registry::on_transfer(const name& from, const name& to, const asset& quantity, c
    auto config = get_config();
    require_enabled(config);
 
-   check(get_first_receiver() == config.systemtoken.contract, "Incorrect token contract for deposit.");
-   check(quantity.symbol == config.systemtoken.symbol, "Incorrect token symbol for deposit.");
+   check(get_first_receiver() == config.fees.token.contract, "Incorrect token contract for deposit.");
+   check(quantity.symbol == config.fees.token.symbol, "Incorrect token symbol for deposit.");
    check(quantity.amount > 0, "Token quantity must be positive.");
 
    add_balance(from, quantity);
@@ -134,12 +134,12 @@ registry::on_transfer(const name& from, const name& to, const asset& quantity, c
    auto config = get_config();
    require_enabled(config);
 
-   check(quantity.symbol == config.systemtoken.symbol, "Incorrect token symbol for withdraw.");
-
+   check(quantity.symbol == config.fees.token.symbol, "Incorrect token symbol for withdraw.");
+   check(quantity.amount > 0, "Token quantity must be positive.");
    remove_balance(account, quantity);
 
    // Send the tokens
-   token::transfer_action transfer_act{config.systemtoken.contract,
+   token::transfer_action transfer_act{config.fees.token.contract,
                                        {{get_self(), eosiosystem::system_contract::active_permission}}};
    transfer_act.send(get_self(), account, quantity, "");
 }
@@ -150,24 +150,27 @@ registry::on_transfer(const name& from, const name& to, const asset& quantity, c
    auto config = get_config();
    require_enabled(config);
 
+   // Ensure the ticker meets the minimum length requirement
+   check(ticker.length() >= config.regtoken.minimum_ticker_length, "token ticker is too short");
+
    // Prevent duplicate token registrations
    token_table tokens(get_self(), get_self().value);
    auto        token_itr = tokens.find(ticker.raw());
    check(token_itr == tokens.end(), "token is already registered");
 
    // Verify payment values
-   check(payment.symbol == config.systemtoken.symbol, "incorrect payment symbol");
+   check(payment.symbol == config.fees.token.symbol, "incorrect payment symbol");
    check(payment.amount == config.fees.regtoken.amount, "incorrect payment amount");
 
    // Verify contract balance to pay fee
-   asset contract_balance = get_balance(creator, config.systemtoken.symbol);
+   asset contract_balance = get_balance(creator, config.fees.token.symbol);
    check(contract_balance.amount >= payment.amount, "insufficient contract balance to pay registration fee");
 
    // Remove fee from contract balance
    remove_balance(creator, payment);
 
    // Transfer fee to receiver
-   token::transfer_action transfer_act{config.systemtoken.contract,
+   token::transfer_action transfer_act{config.fees.token.contract,
                                        {{get_self(), eosiosystem::system_contract::active_permission}}};
    transfer_act.send(get_self(), config.fees.receiver, payment, "token registration fee");
 
@@ -233,13 +236,13 @@ registry::on_transfer(const name& from, const name& to, const asset& quantity, c
    close_balance(account);
 }
 
-[[eosio::action]] void registry::setconfig(const antelope::token_definition& systemtoken, const fees& fees)
+[[eosio::action]] void registry::setconfig(const fees& fees, const regtoken_config& regtoken)
 {
    require_auth(get_self());
    config_table _config(get_self(), get_self().value);
    auto         config = _config.get_or_default();
-   config.systemtoken  = systemtoken;
    config.fees         = fees;
+   config.regtoken     = regtoken;
    _config.set(config, get_self());
 }
 
@@ -248,8 +251,8 @@ registry::on_transfer(const name& from, const name& to, const asset& quantity, c
    require_auth(get_self());
    config_table _config(get_self(), get_self().value);
    auto         config = _config.get_or_default();
-   check(config.systemtoken.symbol.is_valid(), "systemtoken symbol must be set");
-   check(config.systemtoken.contract.value != 0, "systemtoken contract must be set");
+   check(config.fees.token.symbol.is_valid(), "fees.token symbol must be set");
+   check(config.fees.token.contract.value != 0, "fees.token contract must be set");
    check(config.fees.receiver.value != 0, "fees receiver must be set");
    check(config.fees.regtoken.amount > 0, "fees regtoken must be greater than 0");
    config.enabled = true;

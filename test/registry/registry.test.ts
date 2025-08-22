@@ -177,12 +177,15 @@ describe(`contract: ${registryContract}`, () => {
                     await contracts.registry.actions
                         .setconfig([
                             {
-                                contract: defaultSystemTokenContract,
-                                symbol: defaultSystemTokenSymbol,
-                            },
-                            {
+                                token: {
+                                    contract: defaultSystemTokenContract,
+                                    symbol: defaultSystemTokenSymbol,
+                                },
                                 receiver: defaultFeesAccount,
                                 regtoken: '20.0000 A',
+                            },
+                            {
+                                minimum_ticker_length: 1,
                             },
                         ])
                         .send()
@@ -292,23 +295,19 @@ describe(`contract: ${registryContract}`, () => {
                         contracts.registry.actions.regtoken([alice, 'FOO', '2.0000 A']).send(alice)
                     ).rejects.toThrow('eosio_assert: incorrect payment amount')
                 })
-                // test('token contract not on whitelist', async () => {
-                //     const action = contracts.registry.actions
-                //         .regtoken([alice, 'FOO', '1.0000 A'])
-                //         .send(alice)
-
-                //     expect(action).rejects.toThrow('eosio_assert: contract is not whitelisted')
-                // })
                 test('incorrect payment amount', async () => {
                     await contracts.registry.actions
                         .setconfig([
                             {
-                                contract: defaultSystemTokenContract,
-                                symbol: defaultSystemTokenSymbol,
-                            },
-                            {
+                                token: {
+                                    contract: defaultSystemTokenContract,
+                                    symbol: defaultSystemTokenSymbol,
+                                },
                                 receiver: defaultFeesAccount,
                                 regtoken: '20.0000 A',
+                            },
+                            {
+                                minimum_ticker_length: 1,
                             },
                         ])
                         .send()
@@ -359,12 +358,15 @@ describe(`contract: ${registryContract}`, () => {
                     await contracts.registry.actions
                         .setconfig([
                             {
-                                contract: defaultSystemTokenContract,
-                                symbol: defaultSystemTokenSymbol,
-                            },
-                            {
+                                token: {
+                                    contract: defaultSystemTokenContract,
+                                    symbol: defaultSystemTokenSymbol,
+                                },
                                 receiver: defaultFeesAccount,
                                 regtoken: '20.0000 A',
+                            },
+                            {
+                                minimum_ticker_length: 1,
                             },
                         ])
                         .send()
@@ -389,6 +391,44 @@ describe(`contract: ${registryContract}`, () => {
                         .regtoken([alice, 'FOO', '20.0000 A'])
                         .send(alice)
                     expect(action).rejects.toThrow('eosio_assert: token is already registered')
+                })
+                test('requires minimum ticker length', async () => {
+                    await contracts.registry.actions
+                        .setconfig([
+                            {
+                                token: {
+                                    contract: defaultSystemTokenContract,
+                                    symbol: defaultSystemTokenSymbol,
+                                },
+                                receiver: defaultFeesAccount,
+                                regtoken: '20.0000 A',
+                            },
+                            {
+                                minimum_ticker_length: 3,
+                            },
+                        ])
+                        .send()
+
+                    await contracts.token.actions
+                        .transfer([alice, registryContract, '50.0000 A', ''])
+                        .send(alice)
+
+                    // Try registering a token with a short ticker
+                    const action = contracts.registry.actions
+                        .regtoken([alice, 'F', '20.0000 A'])
+                        .send(alice)
+                    expect(action).rejects.toThrow('eosio_assert: token ticker is too short')
+
+                    // Try registering a token with a short ticker
+                    const action2 = contracts.registry.actions
+                        .regtoken([alice, 'FO', '20.0000 A'])
+                        .send(alice)
+                    expect(action2).rejects.toThrow('eosio_assert: token ticker is too short')
+
+                    // Try registering a token with an appropriate ticker
+                    await contracts.registry.actions
+                        .regtoken([alice, 'FOO', '20.0000 A'])
+                        .send(alice)
                 })
             })
         })
@@ -472,12 +512,15 @@ describe(`contract: ${registryContract}`, () => {
                     await contracts.registry.actions
                         .setconfig([
                             {
-                                contract: 'foo.token',
-                                symbol: '4,FOO',
-                            },
-                            {
+                                token: {
+                                    contract: 'foo.token',
+                                    symbol: '4,FOO',
+                                },
                                 receiver: 'foo',
                                 regtoken: '1.0000 FOO',
+                            },
+                            {
+                                minimum_ticker_length: 1,
                             },
                         ])
                         .send()
@@ -495,7 +538,7 @@ describe(`contract: ${registryContract}`, () => {
                 test('requires configuration to be set before enabling', async () => {
                     await contracts.registry.actions.reset().send()
                     const action = contracts.registry.actions.enable().send()
-                    expect(action).rejects.toThrow('eosio_assert: systemtoken symbol must be set')
+                    expect(action).rejects.toThrow('eosio_assert: fees.token symbol must be set')
                 })
             })
         })
@@ -522,20 +565,23 @@ describe(`contract: ${registryContract}`, () => {
                     await contracts.registry.actions
                         .setconfig([
                             {
-                                contract: 'foo.token',
-                                symbol: '4,FOO',
-                            },
-                            {
+                                token: {
+                                    contract: 'foo.token',
+                                    symbol: '4,FOO',
+                                },
                                 receiver: 'foo',
                                 regtoken: '1.0000 FOO',
+                            },
+                            {
+                                minimum_ticker_length: 1,
                             },
                         ])
                         .send()
                     const rows = await contracts.registry.tables.config().getTableRows()
                     expect(rows).toHaveLength(1)
                     expect(rows[0].enabled).toBeFalse()
-                    expect(rows[0].systemtoken.contract).toBe('foo.token')
-                    expect(rows[0].systemtoken.symbol).toBe('4,FOO')
+                    expect(rows[0].fees.token.contract).toBe('foo.token')
+                    expect(rows[0].fees.token.symbol).toBe('4,FOO')
                     expect(rows[0].fees.receiver).toBe('foo')
                     expect(rows[0].fees.regtoken).toBe('1.0000 FOO')
                 })
@@ -545,20 +591,23 @@ describe(`contract: ${registryContract}`, () => {
                     await contracts.registry.actions
                         .setconfig([
                             {
-                                contract: 'foo.token',
-                                symbol: '4,FOO',
-                            },
-                            {
+                                token: {
+                                    contract: 'foo.token',
+                                    symbol: '4,FOO',
+                                },
                                 receiver: 'foo',
                                 regtoken: '1.0000 A',
+                            },
+                            {
+                                minimum_ticker_length: 1,
                             },
                         ])
                         .send()
                     const rows = await contracts.registry.tables.config().getTableRows()
                     expect(rows).toHaveLength(1)
                     expect(rows[0].enabled).toBeFalse()
-                    expect(rows[0].systemtoken.contract).toBe('foo.token')
-                    expect(rows[0].systemtoken.symbol).toBe('4,FOO')
+                    expect(rows[0].fees.token.contract).toBe('foo.token')
+                    expect(rows[0].fees.token.symbol).toBe('4,FOO')
                     expect(rows[0].fees.receiver).toBe('foo')
                     expect(rows[0].fees.regtoken).toBe('1.0000 A')
 
@@ -569,8 +618,8 @@ describe(`contract: ${registryContract}`, () => {
                     const updatedRows = await contracts.registry.tables.config().getTableRows()
                     expect(updatedRows).toHaveLength(1)
                     expect(updatedRows[0].enabled).toBeTrue()
-                    expect(updatedRows[0].systemtoken.contract).toBe('foo.token')
-                    expect(updatedRows[0].systemtoken.symbol).toBe('4,FOO')
+                    expect(updatedRows[0].fees.token.contract).toBe('foo.token')
+                    expect(updatedRows[0].fees.token.symbol).toBe('4,FOO')
                     expect(updatedRows[0].fees.receiver).toBe('foo')
                     expect(updatedRows[0].fees.regtoken).toBe('1.0000 A')
                 })
@@ -581,12 +630,15 @@ describe(`contract: ${registryContract}`, () => {
                     const action = contracts.registry.actions
                         .setconfig([
                             {
-                                contract: 'foo.token',
-                                symbol: '4,FOO',
-                            },
-                            {
+                                token: {
+                                    contract: 'foo.token',
+                                    symbol: '4,FOO',
+                                },
                                 receiver: 'eosio.null',
                                 regtoken: '1.0000 A',
+                            },
+                            {
+                                minimum_ticker_length: 1,
                             },
                         ])
                         .send(alice)

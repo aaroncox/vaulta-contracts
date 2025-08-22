@@ -23,11 +23,20 @@ public:
 
    struct fees
    {
-      // The account that receives the fees
+      // The token definition for fees/deposits/withdrawals
+      antelope::token_definition token;
+
+      // The account that receives any fees paid
       name receiver;
 
       // Fee for registering a token in the registry
       asset regtoken;
+   };
+
+   struct regtoken_config
+   {
+      // Minimum length for token tickers
+      uint8_t minimum_ticker_length = 1;
    };
 
    struct [[eosio::table("config")]] config_row
@@ -35,11 +44,11 @@ public:
       // Whether or not the contract is enabled
       bool enabled = false;
 
-      // The system token definition defining the token used for fees/deposits/withdrawals
-      antelope::token_definition systemtoken;
-
-      // The various fee structures
+      // The fee configuration
       fees fees;
+
+      // The configuration of regtoken
+      regtoken_config regtoken;
    };
    typedef eosio::singleton<"config"_n, config_row> config_table;
 
@@ -74,7 +83,7 @@ public:
    [[eosio::action]] void disable();
    using disable_action = eosio::action_wrapper<"disable"_n, &registry::disable>;
 
-   [[eosio::action]] void setconfig(const antelope::token_definition& systemtoken, const fees& fees);
+   [[eosio::action]] void setconfig(const fees& fees, const regtoken_config& regtoken);
    using setconfig_action = eosio::action_wrapper<"setconfig"_n, &registry::setconfig>;
 
    /** Balance Management */
