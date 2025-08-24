@@ -7,7 +7,7 @@ SRC_CONTRACT_NAME = mockreceiver
 MAINNET_NODE_URL = https://eos.greymass.com
 MAINNET_CONTRACT_ACCOUNT = mockreceiver
 TESTNET_NODE_URL = https://jungle4.greymass.com
-TESTNET_CONTRACT_ACCOUNT = mockreceiver.gm
+TESTNET_CONTRACT_ACCOUNT = mockrecv.gm
 
 INCLUDES = -I include -I ../../shared/include
 
