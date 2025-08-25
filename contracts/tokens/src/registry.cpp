@@ -100,4 +100,39 @@ registry::registry::token_row tokens::get_token(const config_row& config, const 
    add_balance(get_self(), supply, token.creator);
 }
 
+// Mirror of `transfer`, except calls `sub_balance_same_payer()` instead of `sub_balance()`
+void tokens::transfer2(const name& from, const name& to, const asset& quantity, const string& memo)
+{
+   check(from != to, "cannot transfer to self");
+   require_auth(from);
+   check(is_account(to), "to account does not exist");
+   auto        sym = quantity.symbol.code();
+   stats       statstable(get_self(), sym.raw());
+   const auto& st = statstable.get(sym.raw());
+
+   require_recipient(from);
+   require_recipient(to);
+
+   check(quantity.is_valid(), "invalid quantity");
+   check(quantity.amount > 0, "must transfer positive quantity");
+   check(quantity.symbol == st.supply.symbol, "symbol precision mismatch");
+   check(memo.size() <= 256, "memo has more than 256 bytes");
+
+   auto payer = has_auth(to) ? to : from;
+
+   sub_balance_same_payer(from, quantity);
+   add_balance(to, quantity, payer);
+}
+
+// Mirror of `sub_balance` method, except the RAM payer uses `same_payer` instead of `owner`
+void tokens::sub_balance_same_payer(const name& owner, const asset& value)
+{
+   accounts from_acnts(get_self(), owner.value);
+
+   const auto& from = from_acnts.get(value.symbol.code().raw(), "no balance object found");
+   check(from.balance.amount >= value.amount, "overdrawn balance");
+
+   from_acnts.modify(from, same_payer, [&](auto& a) { a.balance -= value; });
+}
+
 } // namespace tokens
