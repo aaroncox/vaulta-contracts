@@ -151,7 +151,7 @@ registry::on_transfer(const name& from, const name& to, const asset& quantity, c
    require_enabled(config);
 
    // Ensure the ticker meets the minimum length requirement
-   check(ticker.length() >= config.regtoken.minimum_ticker_length, "token ticker is too short");
+   check(ticker.length() >= config.regtoken.minlength, "token ticker is too short");
 
    // Prevent duplicate token registrations
    token_table tokens(get_self(), get_self().value);
@@ -236,13 +236,10 @@ registry::on_transfer(const name& from, const name& to, const asset& quantity, c
    close_balance(account);
 }
 
-[[eosio::action]] void registry::setconfig(const fees& fees, const regtoken_config& regtoken)
+[[eosio::action]] void registry::setconfig(const config_row& config)
 {
    require_auth(get_self());
    config_table _config(get_self(), get_self().value);
-   auto         config = _config.get_or_default();
-   config.fees         = fees;
-   config.regtoken     = regtoken;
    _config.set(config, get_self());
 }
 

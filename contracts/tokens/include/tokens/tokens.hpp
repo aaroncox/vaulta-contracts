@@ -227,12 +227,18 @@ public:
    using distribute_action = eosio::action_wrapper<"distribute"_n, &tokens::distribute>;
 
    registry::registry::token_row get_token(const config_row& config, const symbol_code& ticker);
+
+   [[eosio::action]]
+   void transfer2(const name& from, const name& to, const asset& quantity, const string& memo);
+   using transfer2_action = eosio::action_wrapper<"transfer2"_n, &tokens::transfer2>;
+
 #ifdef DEBUG
    [[eosio::action]] void reset(const std::vector<eosio::symbol> testsymbols, const std::vector<name> testaccounts);
 #endif
 
 private:
    void sub_balance(const name& owner, const asset& value);
+   void sub_balance_same_payer(const name& owner, const asset& value);
    void add_balance(const name& owner, const asset& value, const name& ram_payer);
 
 #ifdef DEBUG

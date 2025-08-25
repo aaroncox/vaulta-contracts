@@ -21,7 +21,7 @@ class [[eosio::contract("registry")]] registry : public contract
 public:
    using contract::contract;
 
-   struct fees
+   struct fees_config
    {
       // The token definition for fees/deposits/withdrawals
       antelope::token_definition token;
@@ -36,7 +36,7 @@ public:
    struct regtoken_config
    {
       // Minimum length for token tickers
-      uint8_t minimum_ticker_length = 1;
+      uint8_t minlength = 1;
    };
 
    struct [[eosio::table("config")]] config_row
@@ -45,7 +45,7 @@ public:
       bool enabled = false;
 
       // The fee configuration
-      fees fees;
+      fees_config fees;
 
       // The configuration of regtoken
       regtoken_config regtoken;
@@ -83,7 +83,7 @@ public:
    [[eosio::action]] void disable();
    using disable_action = eosio::action_wrapper<"disable"_n, &registry::disable>;
 
-   [[eosio::action]] void setconfig(const fees& fees, const regtoken_config& regtoken);
+   [[eosio::action]] void setconfig(const config_row& config);
    using setconfig_action = eosio::action_wrapper<"setconfig"_n, &registry::setconfig>;
 
    /** Balance Management */

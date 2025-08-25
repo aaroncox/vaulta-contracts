@@ -1,0 +1,1 @@
+The `mockreceiver` is a contract template that can be used to scaffold additional contracts within this project. Copy the folder to a named folder in `./contracts`, then replace `mockreceiver` with the name of the contract.

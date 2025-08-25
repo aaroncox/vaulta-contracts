@@ -7,20 +7,43 @@ export const blockchain = new Blockchain()
 export const alice = 'alice'
 export const bob = 'bob'
 
-export const defaultSystemTokenContract = 'core.vaulta'
+export const apiContract = 'api'
+export const faketokenContract = 'fake.token'
+export const feereceiver = 'eosio.fees'
+export const mockreceiverContract = 'mockreceiver'
+export const registryContract = 'registry'
+export const systemtokenContract = 'core.vaulta'
+export const tokensContract = 'tokens'
+
 export const defaultSystemTokenSymbol = '4,A'
 export const defaultFeesAccount = 'eosio.fees'
 export const defaultInitialBalance = Asset.fromFloat(1000, defaultSystemTokenSymbol)
 
-export const apiContract = 'api'
-export const registryContract = 'registry'
-export const tokensContract = 'tokens'
+export const defaultRegistryConfig = {
+    enabled: true,
+    fees: {
+        token: {
+            contract: systemtokenContract,
+            symbol: defaultSystemTokenSymbol,
+        },
+        receiver: 'eosio.fees',
+        regtoken: Asset.fromFloat(1, defaultSystemTokenSymbol),
+    },
+    regtoken: {
+        minlength: 1,
+    },
+}
 
 export const contracts = {
     api: blockchain.createContract(apiContract, `./contracts/api/build/api`, true),
     faketoken: blockchain.createContract(
-        'fake.token',
+        faketokenContract,
         './shared/include/eosio.token/eosio.token',
+        true
+    ),
+    mockreceiver: blockchain.createContract(
+        mockreceiverContract,
+        `./contracts/mockreceiver/build/mockreceiver`,
         true
     ),
     registry: blockchain.createContract(
@@ -29,7 +52,7 @@ export const contracts = {
         true
     ),
     token: blockchain.createContract(
-        'core.vaulta',
+        systemtokenContract,
         './shared/include/eosio.token/eosio.token',
         true
     ),
@@ -42,14 +65,14 @@ export async function resetContracts() {
 
     // System token setup
     const supply = Asset.fromFloat(1000000000, defaultSystemTokenSymbol)
-    await contracts.token.actions.create([defaultSystemTokenContract, String(supply)]).send()
-    await contracts.token.actions.issue([defaultSystemTokenContract, String(supply), '']).send()
+    await contracts.token.actions.create([systemtokenContract, String(supply)]).send()
+    await contracts.token.actions.issue([systemtokenContract, String(supply), '']).send()
 
     await contracts.token.actions
-        .transfer([defaultSystemTokenContract, 'alice', String(defaultInitialBalance), ''])
+        .transfer([systemtokenContract, 'alice', String(defaultInitialBalance), ''])
         .send()
     await contracts.token.actions
-        .transfer([defaultSystemTokenContract, 'bob', String(defaultInitialBalance), ''])
+        .transfer([systemtokenContract, 'bob', String(defaultInitialBalance), ''])
         .send()
     await contracts.token.actions
         .open([defaultFeesAccount, defaultSystemTokenSymbol, defaultFeesAccount])
@@ -57,15 +80,9 @@ export async function resetContracts() {
 
     // Secondary token on primary contract for testing
     const secondarySupply = Asset.fromFloat(1000000000, '4,B')
-    await contracts.token.actions
-        .create([defaultSystemTokenContract, String(secondarySupply)])
-        .send()
-    await contracts.token.actions
-        .issue([defaultSystemTokenContract, String(secondarySupply), ''])
-        .send()
-    await contracts.token.actions
-        .transfer([defaultSystemTokenContract, 'alice', '1000.0000 B', ''])
-        .send()
+    await contracts.token.actions.create([systemtokenContract, String(secondarySupply)]).send()
+    await contracts.token.actions.issue([systemtokenContract, String(secondarySupply), '']).send()
+    await contracts.token.actions.transfer([systemtokenContract, 'alice', '1000.0000 B', '']).send()
 
     // Fake token contract mimicing system token for testing
     const fakesupply = `1000000000.0000 A`
@@ -85,21 +102,7 @@ export function advanceTime(seconds: number) {
 }
 
 export async function setRegistryConfig() {
-    await contracts.registry.actions
-        .setconfig([
-            {
-                token: {
-                    contract: defaultSystemTokenContract,
-                    symbol: defaultSystemTokenSymbol,
-                },
-                receiver: defaultFeesAccount,
-                regtoken: Asset.fromFloat(1, defaultSystemTokenSymbol),
-            },
-            {
-                minimum_ticker_length: 1,
-            },
-        ])
-        .send()
+    await contracts.registry.actions.setconfig([defaultRegistryConfig]).send()
     await contracts.registry.actions.addcontract([tokensContract]).send()
     await contracts.registry.actions.enable().send()
 }
@@ -108,10 +111,14 @@ export async function setTokensConfig() {
     await contracts.tokens.actions.setconfig([registryContract]).send()
 }
 
-export function getTokenBalance(account: string) {
+export function getTokenBalance(
+    account: string,
+    contract: string = 'token',
+    symbol: string = defaultSystemTokenSymbol
+) {
     const scope = Name.from(account).value.value
-    const primary_key = Asset.Symbol.from(defaultSystemTokenSymbol).code.value.value
-    const row = contracts.token.tables
+    const primary_key = Asset.Symbol.from(symbol).code.value.value
+    const row = contracts[contract].tables
         .accounts(scope)
         .getTableRow(primary_key) as TokenContract.Types.account
     if (!row) throw new Error('Balance not found')
