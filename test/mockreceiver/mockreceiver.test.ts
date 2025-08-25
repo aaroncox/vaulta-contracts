@@ -8,6 +8,7 @@ import {
     mockreceiverContract,
     resetContracts,
     systemtokenContract,
+    tokensContract,
 } from '../helpers'
 import {Name} from '@wharfkit/antelope'
 
@@ -43,18 +44,19 @@ describe(`contract: ${mockreceiverContract}`, () => {
     describe('action: on_transfer', () => {
         describe('success', () => {
             test('forward tokens', async () => {
-                await contracts.mockreceiver.actions
-                    .setconfig([systemtokenContract, alice, bob])
-                    .send()
-                await contracts.token.actions
-                    .transfer([alice, mockreceiverContract, '100.0000 A', ''])
+                await contracts.tokens.actions.create([alice, '1000.0000 FOO']).send()
+                await contracts.tokens.actions.issue([alice, '1000.0000 FOO', 'memo']).send(alice)
+                await contracts.mockreceiver.actions.setconfig([tokensContract, alice, bob]).send()
+                await contracts.tokens.actions.open([bob, '4,FOO', alice]).send(alice)
+                await contracts.tokens.actions
+                    .transfer([alice, mockreceiverContract, '100.0000 FOO', ''])
                     .send(alice)
-                const aliceBalance = getTokenBalance(alice)
-                expect(String(aliceBalance)).toEqual('900.0000 A')
-                const mockreceiverBalance = getTokenBalance(mockreceiverContract)
-                expect(String(mockreceiverBalance)).toEqual('0.0000 A')
-                const bobBalance = getTokenBalance(bob)
-                expect(String(bobBalance)).toEqual('1100.0000 A')
+                const aliceBalance = getTokenBalance(alice, 'tokens', '4,FOO')
+                expect(String(aliceBalance)).toEqual('900.0000 FOO')
+                const mockreceiverBalance = getTokenBalance(mockreceiverContract, 'tokens', '4,FOO')
+                expect(String(mockreceiverBalance)).toEqual('0.0000 FOO')
+                const bobBalance = getTokenBalance(bob, 'tokens', '4,FOO')
+                expect(String(bobBalance)).toEqual('100.0000 FOO')
             })
         })
         describe('error', () => {

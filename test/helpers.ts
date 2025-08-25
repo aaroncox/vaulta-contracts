@@ -111,10 +111,14 @@ export async function setTokensConfig() {
     await contracts.tokens.actions.setconfig([registryContract]).send()
 }
 
-export function getTokenBalance(account: string) {
+export function getTokenBalance(
+    account: string,
+    contract: string = 'token',
+    symbol: string = defaultSystemTokenSymbol
+) {
     const scope = Name.from(account).value.value
-    const primary_key = Asset.Symbol.from(defaultSystemTokenSymbol).code.value.value
-    const row = contracts.token.tables
+    const primary_key = Asset.Symbol.from(symbol).code.value.value
+    const row = contracts[contract].tables
         .accounts(scope)
         .getTableRow(primary_key) as TokenContract.Types.account
     if (!row) throw new Error('Balance not found')
