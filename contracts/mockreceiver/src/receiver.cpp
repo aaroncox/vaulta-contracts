@@ -30,9 +30,15 @@ mockreceiver::on_transfer(const name& from, const name& to, const asset& quantit
          "Only the configured token contract may send tokens to the mockreceiver.");
    check(config.sender == from, "Tokens must be sent from the configured sender account.");
 
-   // Automatically forward tokens to the configured destination
-   eosio::token::transfer_action transfer_act{config.tokencontract, {{get_self(), "active"_n}}};
-   transfer_act.send(get_self(), config.destination, quantity, "");
+   // To prevent these contracts from consuming their own RAM, we need to ensure that the accounts
+   // this contract would send tokens to have an already open balance.
+   tokens::tokens::accounts _balance(config.tokencontract, config.destination.value);
+   auto                     open_itr = _balance.find(quantity.symbol.code().raw());
+   check(open_itr != _balance.end(), "balance must be opened first for: " + config.destination.to_string());
+
+   // Forward tokens to the configured destination
+   tokens::tokens::transfer2_action transfer_act{config.tokencontract, {{get_self(), "active"_n}}};
+   transfer_act.send(get_self(), config.destination, quantity, memo);
 }
 
 [[eosio::action]] void mockreceiver::setconfig(const name tokencontract, const name sender, const name destination)

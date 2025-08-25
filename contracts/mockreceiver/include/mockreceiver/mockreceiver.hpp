@@ -1,8 +1,8 @@
 #pragma once
 
-#include <eosio.token/eosio.token.hpp>
 #include <eosio/eosio.hpp>
 #include <eosio/singleton.hpp>
+#include <tokens/tokens.hpp>
 
 using namespace eosio;
 
