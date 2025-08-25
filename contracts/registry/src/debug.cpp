@@ -1,4 +1,4 @@
-namespace registry {
+namespace vaultacontracts {
 
 template <typename T>
 void registry::clear_table(T& table, uint64_t rows_to_clear)
@@ -34,4 +34,4 @@ void registry::clear_table(T& table, uint64_t rows_to_clear)
    }
 }
 
-} // namespace registry
+} // namespace vaultacontracts

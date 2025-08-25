@@ -1,4 +1,4 @@
-namespace tokens {
+namespace vaultacontracts {
 
 template <typename T>
 void tokens::clear_table(T& table, uint64_t rows_to_clear)
@@ -27,4 +27,4 @@ void tokens::clear_table(T& table, uint64_t rows_to_clear)
    }
 }
 
-} // namespace tokens
+} // namespace vaultacontracts

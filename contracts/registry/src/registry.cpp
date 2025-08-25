@@ -1,6 +1,6 @@
 #include <registry/registry.hpp>
 
-namespace registry {
+namespace vaultacontracts {
 
 registry::config_row registry::get_config()
 {
@@ -265,7 +265,7 @@ registry::on_transfer(const name& from, const name& to, const asset& quantity, c
    _config.set(config, get_self());
 }
 
-} // namespace registry
+} // namespace vaultacontracts
 
 #ifdef DEBUG
 #include "debug.cpp"
