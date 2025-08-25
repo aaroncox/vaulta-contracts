@@ -108,7 +108,7 @@ test/tokens: build/tokens/debug node_modules codegen
 	bun test -t "contract: tokens"
 
 node_modules:
-	make -C contracts/api node_modules
+	bun install --frozen-lockfile
 
 .PHONY: check
 check: cppcheck jscheck
