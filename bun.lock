@@ -6,7 +6,10 @@
         "@vaulta/bolt": "^2.0.0",
         "@vaulta/vert": "^2.1.1",
         "@wharfkit/antelope": "^1.1.1",
+        "@wharfkit/cli": "^2.11.0",
         "@wharfkit/contract": "^1.1.5",
+        "@wharfkit/session": "^1.6.0",
+        "@wharfkit/wallet-plugin-privatekey": "^1.1.0",
       },
       "devDependencies": {
         "@types/bun": "^1.0.4",
@@ -95,6 +98,8 @@
     "@wharfkit/abicache": ["@wharfkit/abicache@1.2.2", "", { "dependencies": { "@wharfkit/antelope": "^1.0.2", "@wharfkit/signing-request": "^3.1.0", "pako": "^2.0.4", "tslib": "^2.1.0" } }, "sha512-yOsYz2qQpQy7Nb8XZj62pZqp8YnmWDqFlrenYksBb9jl+1aWIpFhWd+14VEez4tUAezRH4UWW+w1SX5vhmUY9A=="],
 
     "@wharfkit/antelope": ["@wharfkit/antelope@1.1.1", "", { "dependencies": { "bn.js": "^4.11.9", "brorand": "^1.1.0", "elliptic": "^6.5.4", "hash.js": "^1.0.0", "pako": "^2.1.0", "tslib": "^2.0.3" } }, "sha512-zOetZJG0T4/WRCIC8Ui2DGv+RxrSkdXOq/q8sUqUcuKei+aJo4/9Xk37VULPt2qe0NpTm93ajYV9cYdD9m5Fgg=="],
+
+    "@wharfkit/cli": ["@wharfkit/cli@2.11.0", "", { "dependencies": { "@wharfkit/antelope": "^1.0.0", "@wharfkit/common": "^1.2.4", "@wharfkit/contract": "^1.1.4", "commander": "^11.0.0", "eslint": "^8.48.0", "node-fetch": "^2.6.1", "prettier": "^2.2.1", "typescript": "^4.9.5" }, "bin": { "wharfkit": "lib/cli.js" } }, "sha512-oKxCmjN/Bl30kGz84JM1ouh9NgJIRYGKtaG2Nm6C2I9A8gKFR3dLrgQIJWQeVrLyvj2KgwxgcaZra+FDPSQEwg=="],
 
     "@wharfkit/common": ["@wharfkit/common@1.5.0", "", { "dependencies": { "tslib": "^2.1.0" }, "peerDependencies": { "@wharfkit/antelope": "^1.0.0" } }, "sha512-eqXkOy+vshcEzK8kED+EsoTPJjlBKHYglgV9CBnZQgIlGrWIRXWH4YaXH3W7EbI/nCRJCaNqxm5fC+pgpFcp8g=="],
 
@@ -611,6 +616,12 @@
     "@vaulta/bolt/@vaulta/vert": ["@vaulta/vert@1.2.3", "", { "dependencies": { "@ethereumjs/util": "^8.0.0-beta.1", "@greymass/eosio": "^0.5.5", "bn.js": "^5.2.0", "brorand": "^1.1.0", "chai": "^4.3.6", "colors": "^1.4.0", "cross-fetch": "^3.1.5", "elliptic": "^6.5.4", "hash.js": "^1.1.7", "js-sha3": "^0.8.0", "json-diff": "^0.9.0", "json-diff-ts": "^1.2.4", "lodash": "^4.17.21", "loglevel": "^1.8.0", "loglevel-plugin-prefix": "^0.8.4", "rustbn.js": "^0.2.0", "sorted-btree": "^1.6.0" } }, "sha512-7Ly9lqX2L5rHgmNvam6kI0iHmj/vDHgRjtinzEPUdHM6JNkFgs4Xc7WChM4DSOmV6RKGJJ09vaT3sFhPP2gNqQ=="],
 
     "@wharfkit/antelope/bn.js": ["bn.js@4.12.2", "", {}, "sha512-n4DSx829VRTRByMRGdjQ9iqsN0Bh4OolPsFnaZBLcbi8iXcB+kJ9s7EnRt4wILZNV3kPLHkRVfOc/HvhC3ovDw=="],
+
+    "@wharfkit/cli/commander": ["commander@11.1.0", "", {}, "sha512-yPVavfyCcRhmorC7rWlkHn15b4wDVgVmBA7kV4QVBsF7kv/9TKJAbAXVTxvTnwP8HHKjRCJDClKbciiYS7p0DQ=="],
+
+    "@wharfkit/cli/prettier": ["prettier@2.8.8", "", { "bin": { "prettier": "bin-prettier.js" } }, "sha512-tdN8qQGvNjw4CHbY+XXk0JgCXn9QiF21a55rBe5LJAU+kDyC4WQn4+awm2Xfk2lQMk5fKup9XgzTZtGkjBdP9Q=="],
+
+    "@wharfkit/cli/typescript": ["typescript@4.9.5", "", { "bin": { "tsc": "bin/tsc", "tsserver": "bin/tsserver" } }, "sha512-1FXk9E2Hm+QzZQ7z+McJiHL4NW1F2EzMu9Nq9i3zAaGqibafqYwCVU6WyWAuyQRRzOlxou8xZSyXLEN8oKj24g=="],
 
     "chokidar/glob-parent": ["glob-parent@5.1.2", "", { "dependencies": { "is-glob": "^4.0.1" } }, "sha512-AOIgSQCepiJYwP3ARnGx+5VnTu2HBYdzbGP45eLw1vr3zB3vZLeyed1sC9hnbcOc9/SrMyM5RPQrkGz4aS9Zow=="],
 

@@ -7,12 +7,12 @@ import {
     contracts,
     defaultFeesAccount,
     defaultInitialBalance,
+    defaultRegistryConfig,
     defaultSystemTokenSymbol,
     getTokenBalance,
     registryContract,
     resetContracts,
     tokensContract,
-    defaultRegistryConfig,
 } from '../helpers'
 
 function expectDefaultConfig(config) {

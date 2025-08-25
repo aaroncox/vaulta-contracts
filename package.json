@@ -7,7 +7,10 @@
         "@vaulta/bolt": "^2.0.0",
         "@vaulta/vert": "^2.1.1",
         "@wharfkit/antelope": "^1.1.1",
-        "@wharfkit/contract": "^1.1.5"
+        "@wharfkit/cli": "^2.11.0",
+        "@wharfkit/contract": "^1.1.5",
+        "@wharfkit/session": "^1.6.0",
+        "@wharfkit/wallet-plugin-privatekey": "^1.1.0"
     },
     "devDependencies": {
         "@types/bun": "^1.0.4",

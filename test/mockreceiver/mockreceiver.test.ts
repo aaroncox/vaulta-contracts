@@ -9,7 +9,7 @@ import {
     resetContracts,
     systemtokenContract,
 } from '../helpers'
-import {Asset, Name} from '@wharfkit/antelope'
+import {Name} from '@wharfkit/antelope'
 
 describe(`contract: ${mockreceiverContract}`, () => {
     beforeEach(async () => {

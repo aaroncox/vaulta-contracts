@@ -45,6 +45,10 @@ build/tokens/debug:
 build/tokens/production:
 	make -C contracts/tokens build/production
 
+.PHONY: clean
+clean:
+	rm ./codegen/*.ts
+
 # TESTNET
 
 .PHONY: testnet
@@ -65,6 +69,29 @@ testnet/registry:
 .PHONY: testnet/tokens
 testnet/tokens:
 	make -C contracts/tokens testnet
+
+.PHONY: testnet/reset
+testnet/reset: testnet/reset/mockreceiver testnet/reset/registry testnet/reset/tokens
+
+.PHONY: testnet/reset/api
+testnet/reset/api:
+	make -C contracts/api testnet/reset
+
+.PHONY: testnet/reset/mockreceiver
+testnet/reset/mockreceiver:
+	make -C contracts/mockreceiver testnet/reset
+
+.PHONY: testnet/reset/registry
+testnet/reset/registry:
+	make -C contracts/registry testnet/reset
+
+.PHONY: testnet/reset/tokens
+testnet/reset/tokens:
+	make -C contracts/tokens testnet/reset
+
+.PHONY: testnet/setup
+testnet/setup: codegen
+	bun run testnet/setup.ts
 
 # UNIT TESTS
 
@@ -88,7 +115,7 @@ check: cppcheck jscheck
 
 .PHONY: cppcheck
 cppcheck:
-	make -C contracts/api cppcheck
+	clang-format --dry-run --Werror contracts/**/src/*.cpp contracts/**/include/**/*.hpp shared/include/antelope/*.hpp
 
 .PHONY: jscheck
 jscheck: node_modules
@@ -100,16 +127,19 @@ test: build/debug codegen node_modules
 # CODEGEN
 
 .PHONY: codegen
-codegen: codegen/api codegen/registry codegen/token codegen/tokens
+codegen: ./codegen/api.ts ./codegen/mockreceiver.ts ./codegen/registry.ts ./codegen/token.ts ./codegen/tokens.ts
 
-codegen/api:
-	npx @wharfkit/cli generate --json ./contracts/api/build/api.abi --file ./codegen/api.ts api
+./codegen/api.ts:
+	${BIN}/wharfkit generate --json ./contracts/api/build/api.abi --file ./codegen/api.ts api
 
-codegen/registry:
-	npx @wharfkit/cli generate --json ./contracts/registry/build/registry.abi --file ./codegen/registry.ts registry
+./codegen/mockreceiver.ts:
+	${BIN}/wharfkit generate --json ./contracts/mockreceiver/build/mockreceiver.abi --file ./codegen/mockreceiver.ts mockreceiver
 
-codegen/token:
-	npx @wharfkit/cli generate --json ./shared/include/eosio.token/eosio.token.abi --file ./codegen/token.ts token
+./codegen/registry.ts:
+	${BIN}/wharfkit generate --json ./contracts/registry/build/registry.abi --file ./codegen/registry.ts registry
 
-codegen/tokens:
-	npx @wharfkit/cli generate --json ./contracts/tokens/build/tokens.abi --file ./codegen/tokens.ts tokens
+./codegen/token.ts:
+	${BIN}/wharfkit generate --json ./shared/include/eosio.token/eosio.token.abi --file ./codegen/token.ts token
+
+./codegen/tokens.ts:
+	${BIN}/wharfkit generate --json ./contracts/tokens/build/tokens.abi --file ./codegen/tokens.ts tokens
