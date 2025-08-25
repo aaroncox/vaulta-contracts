@@ -1,4 +1,4 @@
-namespace mockreceiver {
+namespace vaultacontracts {
 [[eosio::on_notify("*::transfer")]] void
 
 /**
@@ -32,12 +32,12 @@ mockreceiver::on_transfer(const name& from, const name& to, const asset& quantit
 
    // To prevent these contracts from consuming their own RAM, we need to ensure that the accounts
    // this contract would send tokens to have an already open balance.
-   tokens::tokens::accounts _balance(config.tokencontract, config.destination.value);
-   auto                     open_itr = _balance.find(quantity.symbol.code().raw());
+   vaultacontracts::tokens::accounts _balance(config.tokencontract, config.destination.value);
+   auto                              open_itr = _balance.find(quantity.symbol.code().raw());
    check(open_itr != _balance.end(), "balance must be opened first for: " + config.destination.to_string());
 
    // Forward tokens to the configured destination
-   tokens::tokens::transfer2_action transfer_act{config.tokencontract, {{get_self(), "active"_n}}};
+   vaultacontracts::tokens::transfer2_action transfer_act{config.tokencontract, {{get_self(), "active"_n}}};
    transfer_act.send(get_self(), config.destination, quantity, memo);
 }
 
@@ -52,4 +52,4 @@ mockreceiver::on_transfer(const name& from, const name& to, const asset& quantit
    _config.set(config, get_self());
 }
 
-} // namespace mockreceiver
+} // namespace vaultacontracts

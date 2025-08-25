@@ -1,6 +1,6 @@
 #include <tokens/tokens.hpp>
 
-namespace tokens {
+namespace vaultacontracts {
 
 void tokens::create(const name& issuer, const asset& maximum_supply)
 {
@@ -164,4 +164,4 @@ void tokens::close(const name& owner, const symbol& symbol)
    acnts.erase(it);
 }
 
-} // namespace tokens
+} // namespace vaultacontracts

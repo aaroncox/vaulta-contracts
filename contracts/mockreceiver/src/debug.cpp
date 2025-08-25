@@ -1,4 +1,4 @@
-namespace mockreceiver {
+namespace vaultacontracts {
 
 [[eosio::action]] void mockreceiver::reset()
 {
@@ -8,4 +8,4 @@ namespace mockreceiver {
    _config.remove();
 }
 
-} // namespace mockreceiver
+} // namespace vaultacontracts

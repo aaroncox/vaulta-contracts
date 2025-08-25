@@ -1,6 +1,6 @@
 #include "api/api.hpp"
 
-namespace api {
+namespace vaultacontracts {
 
 api::config_row api::get_config()
 {
@@ -403,7 +403,7 @@ api::balances(const name account, const vector<antelope::token_definition> token
    _config.set(config, get_self());
 }
 
-} // namespace api
+} // namespace vaultacontracts
 
 // DEBUG (used on testnet)
 #ifdef DEBUG

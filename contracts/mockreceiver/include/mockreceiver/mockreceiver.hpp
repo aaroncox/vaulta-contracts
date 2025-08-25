@@ -6,7 +6,7 @@
 
 using namespace eosio;
 
-namespace mockreceiver {
+namespace vaultacontracts {
 
 class [[eosio::contract("mockreceiver")]] mockreceiver : public contract
 {
@@ -32,4 +32,4 @@ public:
 #endif
 };
 
-} // namespace mockreceiver
+} // namespace vaultacontracts

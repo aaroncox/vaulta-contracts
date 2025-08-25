@@ -1,4 +1,4 @@
-namespace ctemplate {
+namespace vaultacontracts {
 
 template <typename T>
 void ctemplate::clear_table(T& table, uint64_t rows_to_clear)
@@ -17,4 +17,4 @@ void ctemplate::clear_table(T& table, uint64_t rows_to_clear)
    // _config.remove();
 }
 
-} // namespace ctemplate
+} // namespace vaultacontracts

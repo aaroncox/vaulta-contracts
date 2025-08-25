@@ -1,7 +1,7 @@
 #include <registry/registry.hpp>
 #include <tokens/tokens.hpp>
 
-namespace tokens {
+namespace vaultacontracts {
 
 [[eosio::action]] void tokens::setconfig(const name registry)
 {
@@ -12,11 +12,11 @@ namespace tokens {
    _config.set(config, get_self());
 }
 
-registry::registry::token_row tokens::get_token(const config_row& config, const symbol_code& ticker)
+vaultacontracts::registry::token_row tokens::get_token(const config_row& config, const symbol_code& ticker)
 {
    check(config.registry.value != 0, "registry contract not set");
-   registry::registry::token_table tokens(config.registry, config.registry.value);
-   auto                            token_itr = tokens.find(ticker.raw());
+   vaultacontracts::registry::token_table tokens(config.registry, config.registry.value);
+   auto                                   token_itr = tokens.find(ticker.raw());
    check(token_itr != tokens.end(), "token is not registered in registry contract");
    return *token_itr;
 }
@@ -135,4 +135,4 @@ void tokens::sub_balance_same_payer(const name& owner, const asset& value)
    from_acnts.modify(from, same_payer, [&](auto& a) { a.balance -= value; });
 }
 
-} // namespace tokens
+} // namespace vaultacontracts

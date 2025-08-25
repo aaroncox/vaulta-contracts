@@ -10,7 +10,7 @@
 using namespace eosio;
 using namespace std;
 
-namespace api {
+namespace vaultacontracts {
 
 struct get_account_response
 {
@@ -161,4 +161,4 @@ private:
 #endif
 };
 
-} // namespace api
+} // namespace vaultacontracts

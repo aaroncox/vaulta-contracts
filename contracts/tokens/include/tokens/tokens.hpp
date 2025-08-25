@@ -14,7 +14,7 @@
 
 using namespace eosio;
 
-namespace tokens {
+namespace vaultacontracts {
 
 using std::string;
 
@@ -226,7 +226,7 @@ public:
                                      const std::vector<antelope::token_allocation>& allocations);
    using distribute_action = eosio::action_wrapper<"distribute"_n, &tokens::distribute>;
 
-   registry::registry::token_row get_token(const config_row& config, const symbol_code& ticker);
+   vaultacontracts::registry::token_row get_token(const config_row& config, const symbol_code& ticker);
 
    [[eosio::action]]
    void transfer2(const name& from, const name& to, const asset& quantity, const string& memo);
@@ -247,4 +247,4 @@ private:
 #endif
 };
 
-} // namespace tokens
+} // namespace vaultacontracts
