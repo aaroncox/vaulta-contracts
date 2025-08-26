@@ -92,25 +92,37 @@ async function batch(session: Session, actions: BatchAction[]) {
     await new Promise((resolve) => setTimeout(resolve, 1000))
 }
 
+// Retrieve all tokens and accounts in the contract
+const accounts: string[] = []
+const symbols: string[] = []
+const tokens = await registryContract.table('tokens').all()
+for (const token of tokens) {
+    const symbol = await tokensContract.table('stat', String(token.ticker)).get()
+    if (!symbol) {
+        throw new Error(`Symbol ${token.ticker} not found in tokens contract`)
+    }
+    symbols.push(String(symbol?.supply.symbol))
+    const scopes = await tokensContract.table('accounts').scopes().all()
+    scopes.forEach((scope) => {
+        accounts.push(String(scope.scope))
+    })
+}
+const uniqueAccounts = [...new Set(accounts)]
+
+// Reset them all
+await transact(
+    tokensSession,
+    tokensContract.action('reset', {
+        testaccounts: uniqueAccounts,
+        testsymbols: symbols,
+    }),
+    `Call \`${process.env.TOKENS_CONTRACT_NAME}::reset\` as \`${tokensSession.actor}\` to reset the token contract.`
+)
+
 await transact(
     registrySession,
     registryContract.action('reset', {}),
     `Call \`${process.env.REGISTRY_CONTRACT_NAME}::reset\` as \`${registrySession.actor}\` to reset the registry contract.`
-)
-
-await transact(
-    tokensSession,
-    tokensContract.action('reset', {
-        testaccounts: [
-            'eosio',
-            process.env.MOCKRECEIVER_TESTNET_ACCOUNT,
-            process.env.REGISTRY_TESTNET_ACCOUNT,
-            process.env.TESTNET_TEST_ACCOUNT,
-            process.env.TOKENS_TESTNET_ACCOUNT,
-        ],
-        testsymbols: ['2,FOO'],
-    }),
-    `Call \`${process.env.TOKENS_CONTRACT_NAME}::reset\` as \`${tokensSession.actor}\` to reset the token contract.`
 )
 
 await transact(
