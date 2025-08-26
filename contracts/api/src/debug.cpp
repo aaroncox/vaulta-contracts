@@ -1,7 +1,7 @@
 #include "api/api.hpp"
 
 #ifdef DEBUG // DEBUG (only used on dev builds for testnet)
-namespace api {
+namespace vaultacontracts {
 
 template <typename T>
 void api::clear_table(T& table, uint64_t rows_to_clear)
@@ -48,5 +48,5 @@ void api::wipe_tables()
    wipe_tables();
 }
 
-} // namespace api
+} // namespace vaultacontracts
 #endif // DEBUG (only used on dev builds for testnet)

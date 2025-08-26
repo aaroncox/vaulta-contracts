@@ -4,7 +4,7 @@
 
 using namespace eosio;
 
-namespace ctemplate {
+namespace vaultacontracts {
 
 class [[eosio::contract("ctemplate")]] ctemplate : public contract
 {
@@ -22,4 +22,4 @@ private:
 #endif
 };
 
-} // namespace ctemplate
+} // namespace vaultacontracts

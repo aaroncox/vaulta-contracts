@@ -12,7 +12,7 @@
 
 using namespace eosio;
 
-namespace registry {
+namespace vaultacontracts {
 
 using std::string;
 
@@ -148,4 +148,4 @@ private:
 #endif
 };
 
-} // namespace registry
+} // namespace vaultacontracts
