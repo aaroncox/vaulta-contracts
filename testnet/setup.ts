@@ -97,11 +97,7 @@ const accounts: string[] = []
 const symbols: string[] = []
 const tokens = await registryContract.table('tokens').all()
 for (const token of tokens) {
-    const symbol = await tokensContract.table('stat', String(token.ticker)).get()
-    if (!symbol) {
-        throw new Error(`Symbol ${token.ticker} not found in tokens contract`)
-    }
-    symbols.push(String(symbol?.supply.symbol))
+    symbols.push(`${token.precision},${token.ticker}`)
     const scopes = await tokensContract.table('accounts').scopes().all()
     scopes.forEach((scope) => {
         accounts.push(String(scope.scope))
