@@ -129,6 +129,10 @@ test: build/debug codegen node_modules
 .PHONY: codegen
 codegen: ./codegen/api.ts ./codegen/mockreceiver.ts ./codegen/registry.ts ./codegen/token.ts ./codegen/tokens.ts
 
+.PHONY: codegen/clean
+codegen/clean:
+	rm -rf ./codegen/*.ts
+
 ./codegen/api.ts:
 	${BIN}/wharfkit generate --json ./contracts/api/build/api.abi --file ./codegen/api.ts api
 
