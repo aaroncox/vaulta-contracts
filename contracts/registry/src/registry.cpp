@@ -44,12 +44,17 @@ void registry::add_balance(const name& account, const asset& quantity)
    }
 }
 
-void registry::add_token(const symbol_code& ticker, const name& creator, const name& rampayer)
+void registry::add_token(const symbol_code& ticker, const uint8_t& precision, const name& creator, const name& rampayer)
 {
+   // Constrain precision between 0 and 18
+   check(precision >= 0, "Precision must be greater than 0");
+   check(precision <= 18, "Precision must be less than or equal to 18");
+
    token_table tokens(get_self(), get_self().value);
    tokens.emplace(rampayer, [&](auto& row) {
-      row.ticker  = ticker;
-      row.creator = creator;
+      row.ticker    = ticker;
+      row.precision = precision;
+      row.creator   = creator;
    });
 }
 
@@ -144,7 +149,8 @@ registry::on_transfer(const name& from, const name& to, const asset& quantity, c
    transfer_act.send(get_self(), account, quantity, "");
 }
 
-[[eosio::action]] void registry::regtoken(const name& creator, const symbol_code& ticker, const asset& payment)
+[[eosio::action]] void
+registry::regtoken(const name& creator, const symbol_code& ticker, const uint8_t& precision, const asset& payment)
 {
    require_auth(creator);
    auto config = get_config();
@@ -175,7 +181,7 @@ registry::on_transfer(const name& from, const name& to, const asset& quantity, c
    transfer_act.send(get_self(), config.fees.receiver, payment, "token registration fee");
 
    // Add the token to the registry
-   add_token(ticker, creator, creator);
+   add_token(ticker, precision, creator, creator);
 }
 
 [[eosio::action]] void registry::setcontract(const symbol_code& ticker, const name& contract)
@@ -194,13 +200,13 @@ registry::on_transfer(const name& from, const name& to, const asset& quantity, c
    tokens.modify(token_itr, same_payer, [&](auto& row) { row.contract = contract; });
 }
 
-[[eosio::action]] void registry::addtoken(const name& creator, const symbol_code& ticker)
+[[eosio::action]] void registry::addtoken(const name& creator, const symbol_code& ticker, const uint8_t& precision)
 {
    require_auth(get_self());
    token_table tokens(get_self(), get_self().value);
    auto        token_itr = tokens.find(ticker.raw());
    check(token_itr == tokens.end(), "token is already registered");
-   add_token(ticker, creator, get_self());
+   add_token(ticker, precision, creator, get_self());
 }
 
 [[eosio::action]] void registry::addcontract(const name& contract)
