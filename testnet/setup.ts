@@ -192,6 +192,7 @@ await batch(userSession, [
     {
         action: registryContract.action('regtoken', {
             ticker: 'FOO',
+            precision: 2,
             creator: userSession.actor,
             payment: process.env.REGISTRY_FEE_AMOUNT,
         }),
