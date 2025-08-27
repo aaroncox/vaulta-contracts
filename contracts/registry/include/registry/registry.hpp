@@ -70,6 +70,7 @@ public:
    struct [[eosio::table("tokens")]] token_row
    {
       symbol_code    ticker;
+      uint8_t        precision;
       name           creator;
       optional<name> contract;
       uint64_t       primary_key() const { return ticker.raw(); }
@@ -100,7 +101,8 @@ public:
    using closebalance_action = eosio::action_wrapper<"closebalance"_n, &registry::closebalance>;
 
    /** Token Registration */
-   [[eosio::action]] void regtoken(const name& creator, const symbol_code& ticker, const asset& payment);
+   [[eosio::action]] void
+   regtoken(const name& creator, const symbol_code& ticker, const uint8_t& precision, const asset& payment);
    using regtoken_action = eosio::action_wrapper<"regtoken"_n, &registry::regtoken>;
 
    [[eosio::action]] void setcontract(const symbol_code& ticker, const name& contract);
@@ -110,7 +112,7 @@ public:
    [[eosio::action]] void addcontract(const name& contract);
    using addcontract_action = eosio::action_wrapper<"addcontract"_n, &registry::addcontract>;
 
-   [[eosio::action]] void addtoken(const name& creator, const symbol_code& ticker);
+   [[eosio::action]] void addtoken(const name& creator, const symbol_code& ticker, const uint8_t& precision);
    using addtoken_action = eosio::action_wrapper<"addtoken"_n, &registry::addtoken>;
 
    [[eosio::action]] void rmcontract(const name& contract);
@@ -128,7 +130,7 @@ private:
    bool       is_enabled();
    void       require_enabled(const config_row& config) { check(config.enabled, "contract is disabled"); }
 
-   /** Balance Management */
+   /** Deposit System Management */
    void  add_balance(const name& account, const asset& quantity);
    asset get_balance(const name& account, const symbol& token_symbol);
    void  open_balance(const name& account);
@@ -136,7 +138,7 @@ private:
    void  remove_balance(const name& account, const asset& quantity);
 
    /** Token Registry Admin */
-   void add_token(const symbol_code& ticker, const name& creator, const name& rampayer);
+   void add_token(const symbol_code& ticker, const uint8_t& precision, const name& creator, const name& rampayer);
    void add_token_contract(const name& contract);
    void remove_token(const symbol_code& ticker);
    void remove_token_contract(const name& contract);

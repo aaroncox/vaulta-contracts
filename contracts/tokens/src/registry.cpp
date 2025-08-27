@@ -80,6 +80,9 @@ vaultacontracts::registry::token_row tokens::get_token(const config_row& config,
 
    require_auth(token.creator);
 
+   // Require the symbol and precision match what was in the registry
+   check(symbol{token.ticker, token.precision} == supply.symbol, "supply symbol must match token from registry");
+
    // Create the token
    check(supply.is_valid(), "invalid supply");
    check(supply.amount > 0, "max-supply must be positive");

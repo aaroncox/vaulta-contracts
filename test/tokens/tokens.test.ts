@@ -129,7 +129,7 @@ describe(`contract: ${tokensContract}`, () => {
                 await contracts.token.actions
                     .transfer([alice, registryContract, '50.0000 A', ''])
                     .send(alice)
-                await contracts.registry.actions.regtoken([alice, 'FOO', '1.0000 A']).send(alice)
+                await contracts.registry.actions.regtoken([alice, 'FOO', 4, '1.0000 A']).send(alice)
                 await contracts.registry.actions.setcontract(['FOO', tokensContract]).send(alice)
                 await contracts.tokens.actions.setsupply(['FOO', '100.0000 FOO']).send(alice)
 
@@ -155,12 +155,23 @@ describe(`contract: ${tokensContract}`, () => {
                 await contracts.token.actions
                     .transfer([alice, registryContract, '50.0000 A', ''])
                     .send(alice)
-                await contracts.registry.actions.regtoken([alice, 'FOO', '1.0000 A']).send(alice)
+                await contracts.registry.actions.regtoken([alice, 'FOO', 2, '1.0000 A']).send(alice)
                 await contracts.registry.actions.setcontract(['FOO', tokensContract]).send(alice)
 
                 await expect(
                     contracts.tokens.actions.setsupply(['FOO', '100.0000 BAR']).send(alice)
                 ).rejects.toThrow('eosio_assert: ticker must match supply symbol')
+            })
+            test('supply symbol must match against registry', async () => {
+                await contracts.token.actions
+                    .transfer([alice, registryContract, '50.0000 A', ''])
+                    .send(alice)
+                await contracts.registry.actions.regtoken([alice, 'FOO', 2, '1.0000 A']).send(alice)
+                await contracts.registry.actions.setcontract(['FOO', tokensContract]).send(alice)
+
+                await expect(
+                    contracts.tokens.actions.setsupply(['FOO', '100.0000 FOO']).send(alice)
+                ).rejects.toThrow('eosio_assert: supply symbol must match token from registry')
             })
             test('registry must be defined in config', async () => {
                 await contracts.tokens.actions.reset([[], []]).send()
@@ -172,7 +183,7 @@ describe(`contract: ${tokensContract}`, () => {
                 await contracts.token.actions
                     .transfer([alice, registryContract, '50.0000 A', ''])
                     .send(alice)
-                await contracts.registry.actions.regtoken([alice, 'FOO', '1.0000 A']).send(alice)
+                await contracts.registry.actions.regtoken([alice, 'FOO', 2, '1.0000 A']).send(alice)
 
                 await expect(
                     contracts.tokens.actions.setsupply(['FOO', '100.0000 FOO']).send(alice)
@@ -187,7 +198,7 @@ describe(`contract: ${tokensContract}`, () => {
                 await contracts.token.actions
                     .transfer([alice, registryContract, '50.0000 A', ''])
                     .send(alice)
-                await contracts.registry.actions.regtoken([alice, 'FOO', '1.0000 A']).send(alice)
+                await contracts.registry.actions.regtoken([alice, 'FOO', 2, '1.0000 A']).send(alice)
                 await contracts.registry.actions.setcontract(['FOO', tokensContract]).send(alice)
 
                 await expect(
@@ -198,7 +209,7 @@ describe(`contract: ${tokensContract}`, () => {
                 await contracts.token.actions
                     .transfer([alice, registryContract, '50.0000 A', ''])
                     .send(alice)
-                await contracts.registry.actions.regtoken([alice, 'FOO', '1.0000 A']).send(alice)
+                await contracts.registry.actions.regtoken([alice, 'FOO', 4, '1.0000 A']).send(alice)
                 await contracts.registry.actions.setcontract(['FOO', tokensContract]).send(alice)
 
                 await expect(
@@ -209,7 +220,7 @@ describe(`contract: ${tokensContract}`, () => {
                 await contracts.token.actions
                     .transfer([alice, registryContract, '50.0000 A', ''])
                     .send(alice)
-                await contracts.registry.actions.regtoken([alice, 'FOO', '1.0000 A']).send(alice)
+                await contracts.registry.actions.regtoken([alice, 'FOO', 4, '1.0000 A']).send(alice)
                 await contracts.registry.actions.setcontract(['FOO', tokensContract]).send(alice)
 
                 await contracts.tokens.actions.setsupply(['FOO', '100.0000 FOO']).send(alice)
@@ -227,7 +238,7 @@ describe(`contract: ${tokensContract}`, () => {
                 await contracts.token.actions
                     .transfer([alice, registryContract, '50.0000 A', ''])
                     .send(alice)
-                await contracts.registry.actions.regtoken([alice, 'FOO', '1.0000 A']).send(alice)
+                await contracts.registry.actions.regtoken([alice, 'FOO', 4, '1.0000 A']).send(alice)
                 await contracts.registry.actions.setcontract(['FOO', tokensContract]).send(alice)
                 await contracts.tokens.actions.setsupply(['FOO', '100.0000 FOO']).send(alice)
 
@@ -288,7 +299,7 @@ describe(`contract: ${tokensContract}`, () => {
                 await contracts.token.actions
                     .transfer([alice, registryContract, '50.0000 A', ''])
                     .send(alice)
-                await contracts.registry.actions.regtoken([alice, 'FOO', '1.0000 A']).send(alice)
+                await contracts.registry.actions.regtoken([alice, 'FOO', 4, '1.0000 A']).send(alice)
                 await contracts.registry.actions.setcontract(['FOO', tokensContract]).send(alice)
                 await contracts.tokens.actions.setsupply(['FOO', '100.0000 FOO']).send(alice)
                 await contracts.tokens.actions.open([alice, '4,FOO', alice]).send(alice)
@@ -302,7 +313,7 @@ describe(`contract: ${tokensContract}`, () => {
                 await contracts.token.actions
                     .transfer([alice, registryContract, '50.0000 A', ''])
                     .send(alice)
-                await contracts.registry.actions.regtoken([alice, 'FOO', '1.0000 A']).send(alice)
+                await contracts.registry.actions.regtoken([alice, 'FOO', 4, '1.0000 A']).send(alice)
                 await contracts.registry.actions.setcontract(['FOO', tokensContract]).send(alice)
                 await contracts.tokens.actions.setsupply(['FOO', '100.0000 FOO']).send(alice)
                 await contracts.tokens.actions.open([alice, '4,FOO', alice]).send(alice)
@@ -330,7 +341,7 @@ describe(`contract: ${tokensContract}`, () => {
                 await contracts.token.actions
                     .transfer([alice, registryContract, '50.0000 A', ''])
                     .send(alice)
-                await contracts.registry.actions.regtoken([alice, 'FOO', '1.0000 A']).send(alice)
+                await contracts.registry.actions.regtoken([alice, 'FOO', 4, '1.0000 A']).send(alice)
                 await contracts.registry.actions.setcontract(['FOO', tokensContract]).send(alice)
                 await contracts.tokens.actions.setsupply(['FOO', '100.0000 FOO']).send(alice)
                 await contracts.tokens.actions.open([alice, '4,FOO', alice]).send(alice)
@@ -372,10 +383,8 @@ describe(`contract: ${tokensContract}`, () => {
                 await contracts.token.actions
                     .transfer([alice, registryContract, '50.0000 A', ''])
                     .send(alice)
-                await contracts.registry.actions.regtoken([alice, 'FOO', '1.0000 A']).send(alice)
+                await contracts.registry.actions.regtoken([alice, 'FOO', 4, '1.0000 A']).send(alice)
                 await contracts.registry.actions.setcontract(['FOO', tokensContract]).send(alice)
-                // await contracts.tokens.actions.open([alice, '4,FOO', alice]).send(alice)
-                // await contracts.tokens.actions.open([bob, '4,FOO', alice]).send(alice)
 
                 expect(
                     contracts.tokens.actions
@@ -401,7 +410,7 @@ describe(`contract: ${tokensContract}`, () => {
                 await contracts.token.actions
                     .transfer([alice, registryContract, '50.0000 A', ''])
                     .send(alice)
-                await contracts.registry.actions.regtoken([alice, 'FOO', '1.0000 A']).send(alice)
+                await contracts.registry.actions.regtoken([alice, 'FOO', 4, '1.0000 A']).send(alice)
                 await contracts.registry.actions.setcontract(['FOO', tokensContract]).send(alice)
                 await contracts.tokens.actions.setsupply(['FOO', '100.0000 FOO']).send(alice)
                 await contracts.tokens.actions.open([alice, '4,FOO', alice]).send(alice)
@@ -424,7 +433,7 @@ describe(`contract: ${tokensContract}`, () => {
                 await contracts.token.actions
                     .transfer([alice, registryContract, '50.0000 A', ''])
                     .send(alice)
-                await contracts.registry.actions.regtoken([alice, 'FOO', '1.0000 A']).send(alice)
+                await contracts.registry.actions.regtoken([alice, 'FOO', 4, '1.0000 A']).send(alice)
                 await contracts.registry.actions.setcontract(['FOO', tokensContract]).send(alice)
                 await contracts.tokens.actions.setsupply(['FOO', '100.0000 FOO']).send(alice)
                 await contracts.tokens.actions.open([alice, '4,FOO', alice]).send(alice)
@@ -447,7 +456,7 @@ describe(`contract: ${tokensContract}`, () => {
                 await contracts.token.actions
                     .transfer([alice, registryContract, '50.0000 A', ''])
                     .send(alice)
-                await contracts.registry.actions.regtoken([alice, 'FOO', '1.0000 A']).send(alice)
+                await contracts.registry.actions.regtoken([alice, 'FOO', 4, '1.0000 A']).send(alice)
                 await contracts.registry.actions.setcontract(['FOO', tokensContract]).send(alice)
                 await contracts.tokens.actions.setsupply(['FOO', '100.0000 FOO']).send(alice)
                 await contracts.tokens.actions.open([alice, '4,FOO', alice]).send(alice)
@@ -493,7 +502,7 @@ describe(`contract: ${tokensContract}`, () => {
                 await contracts.token.actions
                     .transfer([alice, registryContract, '50.0000 A', ''])
                     .send(alice)
-                await contracts.registry.actions.regtoken([alice, 'FOO', '1.0000 A']).send(alice)
+                await contracts.registry.actions.regtoken([alice, 'FOO', 4, '1.0000 A']).send(alice)
                 await contracts.registry.actions.setcontract(['FOO', tokensContract]).send(alice)
                 await contracts.tokens.actions.setsupply(['FOO', '100.0000 FOO']).send(alice)
                 await contracts.tokens.actions.open([alice, '4,FOO', alice]).send(alice)

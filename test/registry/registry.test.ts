@@ -216,7 +216,7 @@ describe(`contract: ${registryContract}`, () => {
 
                     // Register the token
                     await contracts.registry.actions
-                        .regtoken([alice, 'FOO', '20.0000 A'])
+                        .regtoken([alice, 'FOO', 2, '20.0000 A'])
                         .send(alice)
 
                     // Ensure token registered correctly
@@ -224,6 +224,7 @@ describe(`contract: ${registryContract}`, () => {
                     expect(rows).toHaveLength(1)
                     expect(rows[0].contract).toBeNull()
                     expect(rows[0].ticker).toBe('FOO')
+                    expect(rows[0].precision).toBe(2)
                     expect(rows[0].creator).toBe(alice)
 
                     // Ensure contract balance deducted correctly
@@ -239,43 +240,6 @@ describe(`contract: ${registryContract}`, () => {
                             Asset.fromFloat(20, defaultSystemTokenSymbol).units
                         )
                     ).toBeTrue()
-
-                    // // Ensure allocations recorded correctly
-                    // const allocations = await contracts.registry.tables.allocations().getTableRows()
-                    // expect(allocations).toHaveLength(2)
-
-                    // const aliceAllocation = allocations.find((a) => a.receiver === alice)
-                    // expect(aliceAllocation).toBeDefined()
-                    // expect(aliceAllocation.contract).toBe(tokensContract)
-                    // expect(aliceAllocation.receiver).toBe(alice)
-                    // expect(aliceAllocation.quantity).toBe('0.5000 FOO')
-
-                    // const bobAllocation = allocations.find((a) => a.receiver === 'bob')
-                    // expect(bobAllocation).toBeDefined()
-                    // expect(bobAllocation.contract).toBe(tokensContract)
-                    // expect(bobAllocation.receiver).toBe('bob')
-                    // expect(bobAllocation.quantity).toBe('0.5000 FOO')
-
-                    // // Ensure the token was created with correct supply
-                    // const statsTable = await contracts.tokens.tables
-                    //     .stat(Asset.SymbolCode.from('FOO').value.value)
-                    //     .getTableRows()
-                    // expect(statsTable).toHaveLength(1)
-                    // expect(statsTable[0].supply).toBe('1.0000 FOO')
-                    // expect(statsTable[0].max_supply).toBe('1.0000 FOO')
-                    // expect(statsTable[0].issuer).toBe(registryContract)
-
-                    // // Ensure the token was allocated correctly
-                    // const aliceAccountsTable = await contracts.tokens.tables
-                    //     .accounts(Name.from(alice).value.value)
-                    //     .getTableRows()
-                    // expect(aliceAccountsTable).toHaveLength(1)
-                    // expect(aliceAccountsTable[0].balance).toBe('0.5000 FOO')
-                    // const bobAccountsTable = await contracts.tokens.tables
-                    //     .accounts(Name.from('bob').value.value)
-                    //     .getTableRows()
-                    // expect(bobAccountsTable).toHaveLength(1)
-                    // expect(bobAccountsTable[0].balance).toBe('0.5000 FOO')
                 })
             })
             describe('error', () => {
@@ -283,7 +247,9 @@ describe(`contract: ${registryContract}`, () => {
                     await contracts.registry.actions.reset().send()
                     // Attempt to register token
                     await expect(
-                        contracts.registry.actions.regtoken([alice, 'FOO', '1.0000 A']).send(alice)
+                        contracts.registry.actions
+                            .regtoken([alice, 'FOO', 2, '1.0000 A'])
+                            .send(alice)
                     ).rejects.toThrow('eosio_assert: contract is disabled')
                 })
                 test('incorrect payment symbol', async () => {
@@ -291,13 +257,27 @@ describe(`contract: ${registryContract}`, () => {
                         .transfer([alice, registryContract, '50.0000 A', ''])
                         .send(alice)
                     await expect(
-                        contracts.registry.actions.regtoken([alice, 'FOO', '1.0000 B']).send(alice)
+                        contracts.registry.actions
+                            .regtoken([alice, 'FOO', 2, '1.0000 B'])
+                            .send(alice)
                     ).rejects.toThrow('eosio_assert: incorrect payment symbol')
                 })
                 test('incorrect payment amount', async () => {
                     await expect(
-                        contracts.registry.actions.regtoken([alice, 'FOO', '2.0000 A']).send(alice)
+                        contracts.registry.actions
+                            .regtoken([alice, 'FOO', 2, '2.0000 A'])
+                            .send(alice)
                     ).rejects.toThrow('eosio_assert: incorrect payment amount')
+                })
+                test('incorrect precision', async () => {
+                    await contracts.token.actions
+                        .transfer([alice, registryContract, '50.0000 A', ''])
+                        .send(alice)
+                    await expect(
+                        contracts.registry.actions
+                            .regtoken([alice, 'FOO', 19, '1.0000 A'])
+                            .send(alice)
+                    ).rejects.toThrow('eosio_assert: Precision must be less than or equal to 18')
                 })
                 test('incorrect payment amount', async () => {
                     await contracts.registry.actions
@@ -331,7 +311,9 @@ describe(`contract: ${registryContract}`, () => {
                     expect(rows[0].balance).toBe('50.0000 A')
 
                     await expect(
-                        contracts.registry.actions.regtoken([alice, 'FOO', '30.0000 A']).send(alice)
+                        contracts.registry.actions
+                            .regtoken([alice, 'FOO', 2, '30.0000 A'])
+                            .send(alice)
                     ).rejects.toThrow('eosio_assert: incorrect payment amount')
                 })
                 test('insufficient contract balance to pay fee', async () => {
@@ -349,7 +331,9 @@ describe(`contract: ${registryContract}`, () => {
                     ).toBeTrue()
 
                     await expect(
-                        contracts.registry.actions.regtoken([alice, 'FOO', '1.0000 A']).send(alice)
+                        contracts.registry.actions
+                            .regtoken([alice, 'FOO', 2, '1.0000 A'])
+                            .send(alice)
                     ).rejects.toThrow(
                         'eosio_assert: insufficient contract balance to pay registration fee'
                     )
@@ -362,7 +346,7 @@ describe(`contract: ${registryContract}`, () => {
 
                     // Register the token
                     await contracts.registry.actions
-                        .regtoken([alice, 'FOO', '1.0000 A'])
+                        .regtoken([alice, 'FOO', 2, '1.0000 A'])
                         .send(alice)
 
                     // Ensure token registered correctly
@@ -374,7 +358,7 @@ describe(`contract: ${registryContract}`, () => {
 
                     // Try registering a duplicate
                     const action = contracts.registry.actions
-                        .regtoken([alice, 'FOO', '1.0000 A'])
+                        .regtoken([alice, 'FOO', 2, '1.0000 A'])
                         .send(alice)
                     expect(action).rejects.toThrow('eosio_assert: token is already registered')
                 })
@@ -389,19 +373,19 @@ describe(`contract: ${registryContract}`, () => {
 
                     // Try registering a token with a short ticker
                     const action = contracts.registry.actions
-                        .regtoken([alice, 'F', '1.0000 A'])
+                        .regtoken([alice, 'F', 2, '1.0000 A'])
                         .send(alice)
                     expect(action).rejects.toThrow('eosio_assert: token ticker is too short')
 
                     // Try registering a token with a short ticker
                     const action2 = contracts.registry.actions
-                        .regtoken([alice, 'FO', '1.0000 A'])
+                        .regtoken([alice, 'FO', 2, '1.0000 A'])
                         .send(alice)
                     expect(action2).rejects.toThrow('eosio_assert: token ticker is too short')
 
                     // Try registering a token with an appropriate ticker
                     await contracts.registry.actions
-                        .regtoken([alice, 'FOO', '1.0000 A'])
+                        .regtoken([alice, 'FOO', 2, '1.0000 A'])
                         .send(alice)
                 })
             })
@@ -413,7 +397,7 @@ describe(`contract: ${registryContract}`, () => {
                         .transfer([alice, registryContract, '50.0000 A', ''])
                         .send(alice)
                     await contracts.registry.actions
-                        .regtoken([alice, 'FOO', '1.0000 A'])
+                        .regtoken([alice, 'FOO', 2, '1.0000 A'])
                         .send(alice)
                     await contracts.registry.actions
                         .setcontract(['FOO', tokensContract])
@@ -432,7 +416,7 @@ describe(`contract: ${registryContract}`, () => {
                         .transfer([alice, registryContract, '50.0000 A', ''])
                         .send(alice)
                     await contracts.registry.actions
-                        .regtoken([alice, 'FOO', '1.0000 A'])
+                        .regtoken([alice, 'FOO', 2, '1.0000 A'])
                         .send(alice)
                     const action = contracts.registry.actions
                         .setcontract(['FOO', tokensContract])
@@ -450,7 +434,7 @@ describe(`contract: ${registryContract}`, () => {
                         .transfer([alice, registryContract, '50.0000 A', ''])
                         .send(alice)
                     await contracts.registry.actions
-                        .regtoken([alice, 'FOO', '1.0000 A'])
+                        .regtoken([alice, 'FOO', 2, '1.0000 A'])
                         .send(alice)
                     await contracts.registry.actions
                         .setcontract(['FOO', tokensContract])
@@ -467,7 +451,7 @@ describe(`contract: ${registryContract}`, () => {
                         .transfer([alice, registryContract, '50.0000 A', ''])
                         .send(alice)
                     await contracts.registry.actions
-                        .regtoken([alice, 'FOO', '1.0000 A'])
+                        .regtoken([alice, 'FOO', 2, '1.0000 A'])
                         .send(alice)
                     const action = contracts.registry.actions
                         .setcontract(['FOO', 'foo.token'])
@@ -587,16 +571,17 @@ describe(`contract: ${registryContract}`, () => {
         describe('action: addtoken', () => {
             describe('success', () => {
                 test('add token', async () => {
-                    await contracts.registry.actions.addtoken([alice, 'EOS']).send()
+                    await contracts.registry.actions.addtoken([alice, 'EOS', 4]).send()
                     const rows = await contracts.registry.tables.tokens().getTableRows()
                     expect(rows).toHaveLength(1)
                     expect(rows[0].contract).toBeNull()
                     expect(rows[0].ticker).toBe('EOS')
+                    expect(rows[0].precision).toBe(4)
                     expect(rows[0].creator).toBe(alice)
                 })
                 test('add multiple tokens', async () => {
-                    await contracts.registry.actions.addtoken([alice, 'EOS']).send()
-                    await contracts.registry.actions.addtoken([alice, 'FOO']).send()
+                    await contracts.registry.actions.addtoken([alice, 'EOS', 4]).send()
+                    await contracts.registry.actions.addtoken([alice, 'FOO', 2]).send()
                     const rows = await contracts.registry.tables.tokens().getTableRows()
                     expect(rows).toHaveLength(2)
 
@@ -609,12 +594,14 @@ describe(`contract: ${registryContract}`, () => {
             })
             describe('error', () => {
                 test('require contract auth', async () => {
-                    const action = contracts.registry.actions.addtoken([alice, 'EOS']).send(alice)
+                    const action = contracts.registry.actions
+                        .addtoken([alice, 'EOS', 4])
+                        .send(alice)
                     expect(action).rejects.toThrow('missing required authority registry')
                 })
                 test('prevent duplicate contract/symbol', async () => {
-                    await contracts.registry.actions.addtoken([alice, 'EOS']).send()
-                    const action = contracts.registry.actions.addtoken([alice, 'EOS']).send()
+                    await contracts.registry.actions.addtoken([alice, 'EOS', 4]).send()
+                    const action = contracts.registry.actions.addtoken([alice, 'EOS', 4]).send()
                     expect(action).rejects.toThrow('eosio_assert: token is already registered')
                 })
             })
@@ -648,7 +635,7 @@ describe(`contract: ${registryContract}`, () => {
             describe('success', () => {
                 test('remove token', async () => {
                     await contracts.registry.actions
-                        .addtoken([registryContract, 'EOS'])
+                        .addtoken([registryContract, 'EOS', 4])
                         .send(registryContract)
                     const rowsBefore = await contracts.registry.tables.tokens().getTableRows()
                     expect(rowsBefore).toHaveLength(1)
