@@ -70,28 +70,16 @@ testnet/registry:
 testnet/tokens:
 	make -C contracts/tokens testnet
 
-.PHONY: testnet/reset
-testnet/reset: testnet/reset/mockreceiver testnet/reset/registry testnet/reset/tokens
-
-.PHONY: testnet/reset/api
-testnet/reset/api:
-	make -C contracts/api testnet/reset
-
-.PHONY: testnet/reset/mockreceiver
-testnet/reset/mockreceiver:
-	make -C contracts/mockreceiver testnet/reset
-
-.PHONY: testnet/reset/registry
-testnet/reset/registry:
-	make -C contracts/registry testnet/reset
-
-.PHONY: testnet/reset/tokens
-testnet/reset/tokens:
-	make -C contracts/tokens testnet/reset
-
 .PHONY: testnet/setup
 testnet/setup: codegen
 	bun run testnet/setup.ts
+
+.PHONY: testnet/wipe
+testnet/wipe: codegen
+	bun run testnet/wipe.ts
+
+.PHONY: testnet/reset
+testnet/reset: codegen testnet/wipe testnet/setup
 
 # UNIT TESTS
 

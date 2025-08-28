@@ -24,7 +24,3 @@ clean:
 testnet: build/debug
 	cleos -u $(TESTNET_NODE_URL) set contract $(REGISTRY_TESTNET_ACCOUNT) \
 		build/ ${REGISTRY_CONTRACT_NAME}.wasm ${REGISTRY_CONTRACT_NAME}.abi
-
-.PHONY: testnet/reset
-testnet/reset:
-	cleos -u $(TESTNET_NODE_URL) push action $(REGISTRY_TESTNET_ACCOUNT) reset '{}' -p $(REGISTRY_TESTNET_ACCOUNT)@active

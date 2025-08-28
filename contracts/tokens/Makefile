@@ -24,7 +24,3 @@ clean:
 testnet: build/debug
 	cleos -u $(TESTNET_NODE_URL) set contract $(TOKENS_TESTNET_ACCOUNT) \
 		build/ ${TOKENS_CONTRACT_NAME}.wasm ${TOKENS_CONTRACT_NAME}.abi
-
-.PHONY: testnet/reset
-testnet/reset:
-	cleos -u $(TESTNET_NODE_URL) push action $(TOKENS_TESTNET_ACCOUNT) reset '{"testsymbols": ["2,FOO"],"testaccounts": ["eosio","gm","mockrecv.gm","teamgreymass","wharfkittest"]}' -p $(TOKENS_TESTNET_ACCOUNT)@active
