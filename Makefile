@@ -70,28 +70,16 @@ testnet/registry:
 testnet/tokens:
 	make -C contracts/tokens testnet
 
-.PHONY: testnet/reset
-testnet/reset: testnet/reset/mockreceiver testnet/reset/registry testnet/reset/tokens
-
-.PHONY: testnet/reset/api
-testnet/reset/api:
-	make -C contracts/api testnet/reset
-
-.PHONY: testnet/reset/mockreceiver
-testnet/reset/mockreceiver:
-	make -C contracts/mockreceiver testnet/reset
-
-.PHONY: testnet/reset/registry
-testnet/reset/registry:
-	make -C contracts/registry testnet/reset
-
-.PHONY: testnet/reset/tokens
-testnet/reset/tokens:
-	make -C contracts/tokens testnet/reset
-
 .PHONY: testnet/setup
 testnet/setup: codegen
 	bun run testnet/setup.ts
+
+.PHONY: testnet/wipe
+testnet/wipe: codegen
+	bun run testnet/wipe.ts
+
+.PHONY: testnet/reset
+testnet/reset: codegen testnet/wipe testnet/setup
 
 # UNIT TESTS
 
@@ -128,6 +116,10 @@ test: build/debug codegen node_modules
 
 .PHONY: codegen
 codegen: ./codegen/api.ts ./codegen/mockreceiver.ts ./codegen/registry.ts ./codegen/token.ts ./codegen/tokens.ts
+
+.PHONY: codegen/clean
+codegen/clean:
+	rm -rf ./codegen/*.ts
 
 ./codegen/api.ts:
 	${BIN}/wharfkit generate --json ./contracts/api/build/api.abi --file ./codegen/api.ts api

@@ -24,7 +24,3 @@ clean:
 testnet: build/debug
 	cleos -u $(TESTNET_NODE_URL) set contract $(MOCKRECEIVER_TESTNET_ACCOUNT) \
 		build/ ${MOCKRECEIVER_CONTRACT_NAME}.wasm ${MOCKRECEIVER_CONTRACT_NAME}.abi
-
-.PHONY: testnet/reset
-testnet/reset:
-	cleos -u $(TESTNET_NODE_URL) push action $(MOCKRECEIVER_TESTNET_ACCOUNT) reset '{}' -p $(MOCKRECEIVER_TESTNET_ACCOUNT)@active

@@ -1,135 +1,15 @@
-import {Action, AnyAction, APIClient} from '@wharfkit/antelope'
-
-import {Contract as MockReceiverContract} from '../codegen/mockreceiver'
-import {Contract as RegistryContract} from '../codegen/registry'
-import {Contract as TokenContract} from '../codegen/token'
-import {Contract as TokensContract} from '../codegen/tokens'
-import {Chains, Session} from '@wharfkit/session'
-import {WalletPluginPrivateKey} from '@wharfkit/wallet-plugin-privatekey'
-
-const client = new APIClient({url: process.env.TESTNET_NODE_URL})
-const chain = Chains.Jungle4
-
-const mockReceiverContract = new MockReceiverContract({
-    account: process.env.MOCKRECEIVER_TESTNET_ACCOUNT,
-    client,
-})
-const registryContract = new RegistryContract({
-    account: process.env.REGISTRY_TESTNET_ACCOUNT,
-    client,
-})
-const systemtokenContract = new TokenContract({
-    account: process.env.TESTNET_SYSTEMTOKEN_ACCOUNT,
-    client,
-})
-const tokensContract = new TokensContract({account: process.env.TOKENS_TESTNET_ACCOUNT, client})
-
-const walletPlugin = new WalletPluginPrivateKey(process.env.TESTNET_PRIVATE_KEY)
-
-const userSession = new Session({
-    chain,
-    actor: process.env.TESTNET_TEST_ACCOUNT,
-    permission: 'active',
-    walletPlugin,
-})
-
-const mockReceiverSession = new Session({
-    chain,
-    actor: process.env.MOCKRECEIVER_TESTNET_ACCOUNT,
-    permission: 'active',
-    walletPlugin,
-})
-
-const registrySession = new Session({
-    chain,
-    actor: process.env.REGISTRY_TESTNET_ACCOUNT,
-    permission: 'active',
-    walletPlugin,
-})
-
-const tokensSession = new Session({
-    chain,
-    actor: process.env.TOKENS_TESTNET_ACCOUNT,
-    permission: 'active',
-    walletPlugin,
-})
-
-async function transact(session: Session, action: Action, description: string) {
-    console.log(`\n## ${action.account}::${action.name}`)
-    console.log(`\n${description}`)
-    console.log(`\n\`\`\``)
-    console.log(JSON.stringify(action.decoded, null, 2))
-    console.log(`\n\`\`\``)
-    const result = await session.transact({action})
-    if (!result.resolved) throw new Error('Transaction failed')
-    console.log(
-        `[Transaction Result](https://jungle4.unicove.com/transaction/${result.resolved.transaction.id})`
-    )
-    await new Promise((resolve) => setTimeout(resolve, 1000))
-}
-
-interface BatchAction {
-    action: Action
-    description: string
-}
-
-async function batch(session: Session, actions: BatchAction[]) {
-    const queue: Action[] = []
-    for (const {action, description} of actions) {
-        console.log(`\n## ${action.account}::${action.name}`)
-        console.log(`\n${description}`)
-        console.log(`\n\`\`\``)
-        console.log(JSON.stringify(action.decoded, null, 2))
-        console.log(`\n\`\`\``)
-        queue.push(action)
-    }
-
-    const result = await session.transact({actions: queue})
-    if (!result.resolved) throw new Error('Transaction failed')
-    console.log(
-        `[Transaction Result](https://jungle4.unicove.com/transaction/${result.resolved.transaction.id})`
-    )
-    await new Promise((resolve) => setTimeout(resolve, 1000))
-}
-
-// Retrieve all tokens and accounts in the contract
-const accounts: string[] = []
-const symbols: string[] = []
-const tokens = await registryContract.table('tokens').all()
-for (const token of tokens) {
-    const symbol = await tokensContract.table('stat', String(token.ticker)).get()
-    if (!symbol) {
-        throw new Error(`Symbol ${token.ticker} not found in tokens contract`)
-    }
-    symbols.push(String(symbol?.supply.symbol))
-    const scopes = await tokensContract.table('accounts').scopes().all()
-    scopes.forEach((scope) => {
-        accounts.push(String(scope.scope))
-    })
-}
-const uniqueAccounts = [...new Set(accounts)]
-
-// Reset them all
-await transact(
-    tokensSession,
-    tokensContract.action('reset', {
-        testaccounts: uniqueAccounts,
-        testsymbols: symbols,
-    }),
-    `Call \`${process.env.TOKENS_CONTRACT_NAME}::reset\` as \`${tokensSession.actor}\` to reset the token contract.`
-)
-
-await transact(
-    registrySession,
-    registryContract.action('reset', {}),
-    `Call \`${process.env.REGISTRY_CONTRACT_NAME}::reset\` as \`${registrySession.actor}\` to reset the registry contract.`
-)
-
-await transact(
+import {
+    batch,
+    mockReceiverContract,
     mockReceiverSession,
-    mockReceiverContract.action('reset', {}),
-    `Call \`${process.env.MOCKRECEIVER_CONTRACT_NAME}::reset\` as \`${mockReceiverSession.actor}\` to reset the mock receiver contract.`
-)
+    registryContract,
+    registrySession,
+    systemtokenContract,
+    tokensContract,
+    tokensSession,
+    transact,
+    userSession,
+} from './common'
 
 await batch(registrySession, [
     {
@@ -196,6 +76,7 @@ await batch(userSession, [
     {
         action: registryContract.action('regtoken', {
             ticker: 'FOO',
+            precision: 2,
             creator: userSession.actor,
             payment: process.env.REGISTRY_FEE_AMOUNT,
         }),
