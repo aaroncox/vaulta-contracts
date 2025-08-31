@@ -214,6 +214,18 @@ eosiosystem::abi_hash get_contract_hash(const api::config_row config, const name
                                .created      = created};
 }
 
+[[eosio::action, eosio::read_only]] vector<get_account_response>
+api::accounts(const vector<name>                                 accounts,
+              const optional<vector<antelope::token_definition>> tokens,
+              const optional<bool>                               zerobalances)
+{
+   vector<get_account_response> responses;
+   for (const auto& account : accounts) {
+      responses.push_back(api::account(account, tokens, zerobalances));
+   }
+   return responses;
+}
+
 [[eosio::action, eosio::read_only]] get_available_response api::available(const name account)
 {
    return get_available_response{.account = account, .available = !is_account(account)};

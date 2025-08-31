@@ -80,6 +80,12 @@ public:
       const name account, const optional<vector<antelope::token_definition>> tokens, const optional<bool> zerobalances);
    using account_action = action_wrapper<"account"_n, &api::account>;
 
+   [[eosio::action, eosio::read_only]] vector<get_account_response>
+   accounts(const vector<name>                                 accounts,
+            const optional<vector<antelope::token_definition>> tokens,
+            const optional<bool>                               zerobalances);
+   using accounts_action = action_wrapper<"accounts"_n, &api::accounts>;
+
    [[eosio::action, eosio::read_only]] get_available_response available(const name account);
    using available_action = action_wrapper<"available"_n, &api::available>;
 
