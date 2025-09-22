@@ -90,8 +90,8 @@ public:
    using available_action = action_wrapper<"available"_n, &api::available>;
 
    [[eosio::action, eosio::read_only]] vector<antelope::token_balance>
-   balances(const name account, const vector<antelope::token_definition> tokens, const bool zerobalances);
-   using balances_action = action_wrapper<"balances"_n, &api::balances>;
+   balance(const name account, const vector<antelope::token_definition> tokens, const bool zerobalances);
+   using balance_action = action_wrapper<"balance"_n, &api::balance>;
 
    [[eosio::action, eosio::read_only]] eosiosystem::abi_hash contracthash(const name account);
    using contracthash_action = action_wrapper<"contracthash"_n, &api::contracthash>;

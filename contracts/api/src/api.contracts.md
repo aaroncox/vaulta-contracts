@@ -20,6 +20,17 @@ icon: https://avatars.githubusercontent.com/u/147292861?s=400&u=3b1af66e90dd851f
 
 ---
 
+<h1 class="contract">balance</h1>
+
+---
+
+spec_version: "0.2.0"
+title: 'Load Account Balances'
+summary: 'Read-only action to load the token balances of an account using the provided token contracts and symbols.'
+icon: https://avatars.githubusercontent.com/u/147292861?s=400&u=3b1af66e90dd851f4d7c096ed6a2fbb4b9e190da
+
+---
+
 <h1 class="contract">balances</h1>
 
 ---

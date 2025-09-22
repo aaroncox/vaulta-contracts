@@ -197,7 +197,7 @@ eosiosystem::abi_hash get_contract_hash(const api::config_row config, const name
 
    vector<antelope::token_balance> balances;
    if (tokens.has_value() && !tokens->empty()) {
-      balances = api::balances(account, tokens.value(), zerobalances.value_or(true));
+      balances = api::balance(account, tokens.value(), zerobalances.value_or(true));
    }
 
    return get_account_response{.account      = account,
@@ -353,7 +353,7 @@ antelope::token_distribution api::get_token_distribution(const antelope::token_d
 }
 
 [[eosio::action, eosio::read_only]] vector<antelope::token_balance>
-api::balances(const name account, const vector<antelope::token_definition> tokens, const bool zerobalances = true)
+api::balance(const name account, const vector<antelope::token_definition> tokens, const bool zerobalances = true)
 {
    auto config = get_config();
 
