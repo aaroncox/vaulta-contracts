@@ -34,6 +34,12 @@ struct get_available_response
    bool available;
 };
 
+struct get_balance_response
+{
+   name                            account;
+   vector<antelope::token_balance> balances;
+};
+
 struct get_network_response
 {
    // This doesn't need to be optional, but without it the CDT creates a memory leak
@@ -89,9 +95,13 @@ public:
    [[eosio::action, eosio::read_only]] get_available_response available(const name account);
    using available_action = action_wrapper<"available"_n, &api::available>;
 
-   [[eosio::action, eosio::read_only]] vector<antelope::token_balance>
+   [[eosio::action, eosio::read_only]] get_balance_response
    balance(const name account, const vector<antelope::token_definition> tokens, const bool zerobalances);
    using balance_action = action_wrapper<"balance"_n, &api::balance>;
+
+   [[eosio::action, eosio::read_only]] vector<get_balance_response>
+   balances(const vector<name> accounts, const vector<antelope::token_definition> tokens, const bool zerobalances);
+   using balances_action = action_wrapper<"balances"_n, &api::balances>;
 
    [[eosio::action, eosio::read_only]] eosiosystem::abi_hash contracthash(const name account);
    using contracthash_action = action_wrapper<"contracthash"_n, &api::contracthash>;
@@ -157,6 +167,10 @@ private:
    antelope::token                          get_system_token(const config_row config, const bool distribution);
    antelope::token_definition               get_system_token_definition(const config_row config);
    antelope::token_balance                  get_system_token_balance(const config_row config, const name account);
+   vector<antelope::token_balance>          get_balances(const config_row                         config,
+                                                         const name                               account,
+                                                         const vector<antelope::token_definition> tokens,
+                                                         const bool                               zerobalances);
 
 #ifdef DEBUG
    template <typename T>

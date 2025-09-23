@@ -47,8 +47,8 @@ icon: https://avatars.githubusercontent.com/u/147292861?s=400&u=3b1af66e90dd851f
 ---
 
 spec_version: "0.2.0"
-title: 'Load Balances'
-summary: 'Read-only action to load the token balances of the provided token contracts and symbols.'
+title: 'Load Multiple Account Balances'
+summary: 'Read-only action to load the token balances of multiple accounts using the provided token contracts and symbols.'
 icon: https://avatars.githubusercontent.com/u/147292861?s=400&u=3b1af66e90dd851f4d7c096ed6a2fbb4b9e190da
 
 ---

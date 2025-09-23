@@ -197,7 +197,7 @@ eosiosystem::abi_hash get_contract_hash(const api::config_row config, const name
 
    vector<antelope::token_balance> balances;
    if (tokens.has_value() && !tokens->empty()) {
-      balances = api::balance(account, tokens.value(), zerobalances.value_or(true));
+      balances = api::get_balances(config, account, tokens.value(), zerobalances.value_or(true));
    }
 
    return get_account_response{.account      = account,
@@ -352,14 +352,12 @@ antelope::token_distribution api::get_token_distribution(const antelope::token_d
    return {.id = definition, .distribution = get_token_distribution(definition)};
 }
 
-[[eosio::action, eosio::read_only]] vector<antelope::token_balance>
-api::balance(const name account, const vector<antelope::token_definition> tokens, const bool zerobalances = true)
+vector<antelope::token_balance> api::get_balances(const config_row                         config,
+                                                  const name                               account,
+                                                  const vector<antelope::token_definition> tokens,
+                                                  const bool                               zerobalances)
 {
-   auto config = get_config();
-
    vector<antelope::token_balance> balances;
-   check(tokens.size() > 0, "tokens must not be empty");
-
    for (const auto& requested : tokens) {
       const antelope::token_definition id = {
          .chain    = config.chain_id,
@@ -380,8 +378,37 @@ api::balance(const name account, const vector<antelope::token_definition> tokens
          balances.push_back(balance);
       }
    }
-
    return balances;
+}
+
+[[eosio::action, eosio::read_only]] get_balance_response
+api::balance(const name account, const vector<antelope::token_definition> tokens, const bool zerobalances = true)
+{
+   auto config = get_config();
+
+   check(tokens.size() > 0, "tokens must not be empty");
+
+   return {
+      .account  = account,
+      .balances = get_balances(config, account, tokens, zerobalances),
+   };
+}
+
+[[eosio::action, eosio::read_only]] vector<get_balance_response> api::balances(
+   const vector<name> accounts, const vector<antelope::token_definition> tokens, const bool zerobalances = true)
+{
+   auto config = get_config();
+
+   vector<get_balance_response> response;
+
+   for (const auto& account : accounts) {
+      response.push_back({
+         .account  = account,
+         .balances = get_balances(config, account, tokens, zerobalances),
+      });
+   }
+
+   return response;
 }
 
 [[eosio::action, eosio::read_only]] eosiosystem::abi_hash api::contracthash(const name account)
