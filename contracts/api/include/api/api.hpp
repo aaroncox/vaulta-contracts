@@ -95,12 +95,17 @@ public:
    [[eosio::action, eosio::read_only]] get_available_response available(const name account);
    using available_action = action_wrapper<"available"_n, &api::available>;
 
-   [[eosio::action, eosio::read_only]] get_balance_response
-   balance(const name account, const vector<antelope::token_definition> tokens, const bool zerobalances);
+   [[eosio::action, eosio::read_only]] get_balance_response balance(const name                               account,
+                                                                    const vector<antelope::token_definition> tokens,
+                                                                    const bool zerobalances,
+                                                                    const bool systemtoken);
    using balance_action = action_wrapper<"balance"_n, &api::balance>;
 
    [[eosio::action, eosio::read_only]] vector<get_balance_response>
-   balances(const vector<name> accounts, const vector<antelope::token_definition> tokens, const bool zerobalances);
+   balances(const vector<name>                       accounts,
+            const vector<antelope::token_definition> tokens,
+            const bool                               zerobalances,
+            const bool                               systemtoken);
    using balances_action = action_wrapper<"balances"_n, &api::balances>;
 
    [[eosio::action, eosio::read_only]] eosiosystem::abi_hash contracthash(const name account);

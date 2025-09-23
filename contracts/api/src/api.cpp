@@ -381,12 +381,17 @@ vector<antelope::token_balance> api::get_balances(const config_row              
    return balances;
 }
 
-[[eosio::action, eosio::read_only]] get_balance_response
-api::balance(const name account, const vector<antelope::token_definition> tokens, const bool zerobalances = true)
+[[eosio::action, eosio::read_only]] get_balance_response api::balance(const name                         account,
+                                                                      vector<antelope::token_definition> tokens,
+                                                                      const bool zerobalances = true,
+                                                                      const bool systemtoken  = true)
 {
    auto config = get_config();
 
-   check(tokens.size() > 0, "tokens must not be empty");
+   if (systemtoken) {
+      auto system_token = get_system_token_definition(config);
+      tokens.push_back(system_token);
+   }
 
    return {
       .account  = account,
@@ -394,12 +399,20 @@ api::balance(const name account, const vector<antelope::token_definition> tokens
    };
 }
 
-[[eosio::action, eosio::read_only]] vector<get_balance_response> api::balances(
-   const vector<name> accounts, const vector<antelope::token_definition> tokens, const bool zerobalances = true)
+[[eosio::action, eosio::read_only]] vector<get_balance_response>
+api::balances(const vector<name>                 accounts,
+              vector<antelope::token_definition> tokens,
+              const bool                         zerobalances = true,
+              const bool                         systemtoken  = true)
 {
    auto config = get_config();
 
    vector<get_balance_response> response;
+
+   if (systemtoken) {
+      auto system_token = get_system_token_definition(config);
+      tokens.push_back(system_token);
+   }
 
    for (const auto& account : accounts) {
       response.push_back({
