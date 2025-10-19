@@ -102,7 +102,9 @@ eosio::public_key stringToPublicKey(string public_key_str)
       string rpid(vch.begin() + 35, vch.begin() + 35 + rpidLength);
 
       return eosio::public_key(in_place_index<2>, eosio::webauthn_public_key{pubkey_data, user_presence, rpid});
-   } else if (type == "K1" || type == "R1") {
+   } else if (type == "R1") {
+      return eosio::public_key(in_place_index<1>, pubkey_data);
+   } else if (type == "K1") {
       return eosio::public_key(in_place_index<0>, pubkey_data);
    }
    check(false, "Unsupported key type");
