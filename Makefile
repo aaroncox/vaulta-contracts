@@ -15,6 +15,12 @@ build/api:
 build/api/debug:
 	make -C contracts/api build/debug
 
+build/create:
+	make -C contracts/create build
+
+build/create/debug:
+	make -C contracts/create build/debug
+
 build/api/production:
 	make -C contracts/api build/production
 
@@ -57,6 +63,10 @@ testnet: testnet/api testnet/mockreceiver testnet/registry testnet/tokens
 .PHONY: testnet/api
 testnet/api:
 	make -C contracts/api testnet
+
+.PHONY: testnet/create
+testnet/create:
+	make -C contracts/create testnet
 
 .PHONY: testnet/mockreceiver
 testnet/mockreceiver:
