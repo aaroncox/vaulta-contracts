@@ -39,6 +39,15 @@ build/registry:
 build/registry/debug:
 	make -C contracts/registry build/debug
 
+build/sentiment:
+	make -C contracts/sentiment build
+
+build/sentiment/debug:
+	make -C contracts/sentiment build/debug
+
+build/sentiment/production:
+	make -C contracts/sentiment build/production
+
 build/registry/production:
 	make -C contracts/registry build/production
 
