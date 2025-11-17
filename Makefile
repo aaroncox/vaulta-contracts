@@ -134,7 +134,7 @@ test: build/debug codegen node_modules
 # CODEGEN
 
 .PHONY: codegen
-codegen: ./codegen/api.ts ./codegen/mockreceiver.ts ./codegen/registry.ts ./codegen/token.ts ./codegen/tokens.ts
+codegen: ./codegen/api.ts ./codegen/mockreceiver.ts ./codegen/registry.ts ./codegen/sentiment.ts ./codegen/token.ts ./codegen/tokens.ts
 
 .PHONY: codegen/clean
 codegen/clean:
@@ -148,6 +148,9 @@ codegen/clean:
 
 ./codegen/registry.ts:
 	${BIN}/wharfkit generate --json ./contracts/registry/build/registry.abi --file ./codegen/registry.ts registry
+
+./codegen/sentiment.ts:
+	${BIN}/wharfkit generate --json ./contracts/sentiment/build/sentiment.abi --file ./codegen/sentiment.ts sentiment
 
 ./codegen/token.ts:
 	${BIN}/wharfkit generate --json ./shared/include/eosio.token/eosio.token.abi --file ./codegen/token.ts token
