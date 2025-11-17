@@ -151,3 +151,25 @@ summary: 'Read-only action to retrieve all voters and their votes for a specific
 icon: https://avatars.githubusercontent.com/u/147292861?s=400&u=3b1af66e90dd851f4d7c096ed6a2fbb4b9e190da
 
 ---
+
+<h1 class="contract">getweight</h1>
+
+---
+
+spec_version: "0.2.0"
+title: 'Get Voter Weight'
+summary: 'Read-only action to retrieve the voting weight of a voter based on their staked tokens in the system contract.'
+icon: https://avatars.githubusercontent.com/u/147292861?s=400&u=3b1af66e90dd851f4d7c096ed6a2fbb4b9e190da
+
+---
+
+<h1 class="contract">getweights</h1>
+
+---
+
+spec_version: "0.2.0"
+title: 'Get Multiple Voter Weights'
+summary: 'Read-only action to retrieve the voting weights of multiple voters based on their staked tokens in the system contract.'
+icon: https://avatars.githubusercontent.com/u/147292861?s=400&u=3b1af66e90dd851f4d7c096ed6a2fbb4b9e190da
+
+---

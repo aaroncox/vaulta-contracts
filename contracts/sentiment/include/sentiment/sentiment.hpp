@@ -4,6 +4,8 @@
 #include <eosio/singleton.hpp>
 #include <eosio/system.hpp>
 
+#include <eosio.system/eosio.system.hpp>
+
 #include <string>
 #include <vector>
 
@@ -24,6 +26,8 @@ public:
    {
       // Whether or not the contract is enabled
       bool enabled = false;
+      // System contract to query for voting weight
+      name system_contract = "eosio"_n;
    };
    typedef eosio::singleton<"config"_n, config_row> config_table;
 
@@ -61,6 +65,12 @@ public:
       name    voter;
       name    topic_id;
       uint8_t vote_type;
+   };
+
+   struct get_voter_weight_response
+   {
+      name    voter;
+      int64_t weight;
    };
 
    /** Contract State Management */
@@ -110,6 +120,12 @@ public:
    [[eosio::action, eosio::read_only]] vector<get_vote_response> getvoters(const name& topic_id);
    using getvoters_action = eosio::action_wrapper<"getvoters"_n, &sentiment::getvoters>;
 
+   [[eosio::action, eosio::read_only]] get_voter_weight_response getweight(const name& voter);
+   using getweight_action = eosio::action_wrapper<"getweight"_n, &sentiment::getweight>;
+
+   [[eosio::action, eosio::read_only]] vector<get_voter_weight_response> getweights(const vector<name>& voters);
+   using getweights_action = eosio::action_wrapper<"getweights"_n, &sentiment::getweights>;
+
 #ifdef DEBUG
    [[eosio::action]] void reset();
 #endif
@@ -117,6 +133,7 @@ public:
 private:
    config_row get_config();
    void       require_enabled(const config_row& config) { check(config.enabled, "contract is disabled"); }
+   get_voter_weight_response get_voter_weight(const config_row& config, const name& voter);
 
 #ifdef DEBUG
    template <typename T>

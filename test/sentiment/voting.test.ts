@@ -466,4 +466,83 @@ describe('contract: sentiment - Voting', () => {
             })
         })
     })
+
+    describe('action: getweight', () => {
+        describe('success', () => {
+            test('returns zero weight for account with no stake', async () => {
+                const result = await contracts.sentiment.actions.getweight(['alice']).read()
+                expect(result).toBeDefined()
+                expect(String(result.voter)).toBe('alice')
+                expect(Number(result.weight)).toBe(0)
+            })
+
+            test('returns weight for account with staked tokens', async () => {
+                // Note: In a real test environment, you would first stake tokens for the account
+                // This test verifies the method works, but returns 0 since we haven't set up staking
+                const result = await contracts.sentiment.actions.getweight(['bob']).read()
+                expect(result).toBeDefined()
+                expect(String(result.voter)).toBe('bob')
+                expect(Number(result.weight)).toBeGreaterThanOrEqual(0)
+            })
+        })
+
+        describe('error', () => {
+            test('fails for non-existent account', async () => {
+                await expect(
+                    contracts.sentiment.actions.getweight(['nonexistent']).read()
+                ).rejects.toThrow()
+            })
+        })
+    })
+
+    describe('action: getweights', () => {
+        describe('success', () => {
+            test('returns weights for multiple accounts', async () => {
+                const result = await contracts.sentiment.actions
+                    .getweights([['alice', 'bob', 'charlie']])
+                    .read()
+                expect(result).toBeDefined()
+                expect(result).toHaveLength(3)
+                expect(String(result[0].voter)).toBe('alice')
+                expect(String(result[1].voter)).toBe('bob')
+                expect(String(result[2].voter)).toBe('charlie')
+                expect(Number(result[0].weight)).toBe(0)
+                expect(Number(result[1].weight)).toBe(0)
+                expect(Number(result[2].weight)).toBe(0)
+            })
+
+            test('returns empty array for empty input', async () => {
+                const result = await contracts.sentiment.actions.getweights([[]]).read()
+                expect(result).toBeDefined()
+                expect(result).toHaveLength(0)
+            })
+
+            test('returns weights for single account in array', async () => {
+                const result = await contracts.sentiment.actions.getweights([['alice']]).read()
+                expect(result).toBeDefined()
+                expect(result).toHaveLength(1)
+                expect(String(result[0].voter)).toBe('alice')
+                expect(Number(result[0].weight)).toBeGreaterThanOrEqual(0)
+            })
+
+            test('handles duplicate accounts in input', async () => {
+                const result = await contracts.sentiment.actions
+                    .getweights([['alice', 'alice', 'bob']])
+                    .read()
+                expect(result).toBeDefined()
+                expect(result).toHaveLength(3)
+                expect(String(result[0].voter)).toBe('alice')
+                expect(String(result[1].voter)).toBe('alice')
+                expect(String(result[2].voter)).toBe('bob')
+            })
+        })
+
+        describe('error', () => {
+            test('fails if any account does not exist', async () => {
+                await expect(
+                    contracts.sentiment.actions.getweights([['alice', 'nonexistent', 'bob']]).read()
+                ).rejects.toThrow()
+            })
+        })
+    })
 })

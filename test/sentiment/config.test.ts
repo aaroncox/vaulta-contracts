@@ -102,7 +102,9 @@ describe('contract: sentiment - Configuration', () => {
 
     describe('action: setconfig', () => {
         test('contract owner can set config', async () => {
-            await contracts.sentiment.actions.setconfig([{enabled: false}]).send(sentimentContract)
+            await contracts.sentiment.actions
+                .setconfig([{enabled: false, system_contract: 'eosio'}])
+                .send(sentimentContract)
 
             // Create a topic (contract-authorized action should still work)
             await contracts.sentiment.actions
@@ -117,7 +119,9 @@ describe('contract: sentiment - Configuration', () => {
 
         test('non-owner cannot set config', async () => {
             await expect(
-                contracts.sentiment.actions.setconfig([{enabled: false}]).send('alice')
+                contracts.sentiment.actions
+                    .setconfig([{enabled: false, system_contract: 'eosio'}])
+                    .send('alice')
             ).rejects.toThrow('missing required authority')
         })
     })
