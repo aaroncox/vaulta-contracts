@@ -25,6 +25,6 @@ testnet: build/debug
 	cleos -u $(TESTNET_NODE_URL) set contract $(SENTIMENT_TESTNET_ACCOUNT) \
 		build/ ${SENTIMENT_CONTRACT_NAME}.wasm ${SENTIMENT_CONTRACT_NAME}.abi
 
-mainnet: build/production
+mainnet: build/debug
 	cleos -u $(MAINNET_NODE_URL) set contract $(SENTIMENT_MAINNET_ACCOUNT) \
 		build/ ${SENTIMENT_CONTRACT_NAME}.wasm ${SENTIMENT_CONTRACT_NAME}.abi
