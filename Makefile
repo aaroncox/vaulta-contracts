@@ -64,6 +64,11 @@ build/tokens/production:
 clean:
 	rm ./codegen/*.ts
 
+# MAINNET
+.PHONY: mainnet/sentiment
+mainnet/sentiment:
+	make -C contracts/sentiment mainnet
+
 # TESTNET
 
 .PHONY: testnet
