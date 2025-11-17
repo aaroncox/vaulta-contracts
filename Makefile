@@ -5,9 +5,9 @@ SHELL := /bin/bash
 
 build: build/production
 
-build/debug: build/api/debug build/mockreceiver/debug build/registry/debug build/tokens/debug
+build/debug: build/api/debug build/mockreceiver/debug build/registry/debug build/sentiment/debug build/tokens/debug
 
-build/production: build/api/production build/registry/production build/tokens/production
+build/production: build/api/production build/registry/production build/sentiment/production build/tokens/production
 
 build/api:
 	make -C contracts/api build
@@ -67,7 +67,7 @@ clean:
 # TESTNET
 
 .PHONY: testnet
-testnet: testnet/api testnet/mockreceiver testnet/registry testnet/tokens
+testnet: testnet/api testnet/mockreceiver testnet/registry testnet/sentiment testnet/tokens
 
 .PHONY: testnet/api
 testnet/api:
@@ -84,6 +84,10 @@ testnet/mockreceiver:
 .PHONY: testnet/registry
 testnet/registry:
 	make -C contracts/registry testnet
+
+.PHONY: testnet/sentiment
+testnet/sentiment:
+	make -C contracts/sentiment testnet
 
 .PHONY: testnet/tokens
 testnet/tokens:
@@ -110,6 +114,9 @@ test/mockreceiver: build/mockreceiver/debug node_modules codegen
 
 test/registry: build/registry/debug node_modules codegen
 	bun test -t "contract: registry"
+
+test/sentiment: build/sentiment/debug node_modules codegen
+	bun test -t "contract: sentiment"
 
 test/tokens: build/tokens/debug node_modules codegen
 	bun test -t "contract: tokens"
