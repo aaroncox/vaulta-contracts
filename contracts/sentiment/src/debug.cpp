@@ -13,8 +13,8 @@ void sentiment::clear_table(T& table, uint64_t rows_to_clear)
 {
    require_auth(get_self());
 
-   // config_table _config(get_self(), get_self().value);
-   // _config.remove();
+   config_table _config(get_self(), get_self().value);
+   _config.remove();
 
    // Clear all votes for all topics
    topics_table topics(get_self(), get_self().value);
