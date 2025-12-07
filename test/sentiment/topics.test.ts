@@ -174,6 +174,76 @@ describe('contract: sentiment - Topic Management', () => {
         })
     })
 
+    describe('read-only actions', () => {
+        describe('action: gettopic', () => {
+            describe('success', () => {
+                test('get a single topic by id', async () => {
+                    await contracts.sentiment.actions
+                        .createtopic(['testtopic', 'Test description'])
+                        .send(sentimentContract)
+
+                    const topic = await contracts.sentiment.actions.gettopic(['testtopic']).read()
+                    expect(String(topic.id)).toBe('testtopic')
+                    expect(topic.description).toBe('Test description')
+                })
+
+                test('get correct topic from multiple', async () => {
+                    await contracts.sentiment.actions
+                        .createtopic(['topic1', 'First topic'])
+                        .send(sentimentContract)
+                    await contracts.sentiment.actions
+                        .createtopic(['topic2', 'Second topic'])
+                        .send(sentimentContract)
+                    await contracts.sentiment.actions
+                        .createtopic(['topic3', 'Third topic'])
+                        .send(sentimentContract)
+
+                    const topic = await contracts.sentiment.actions.gettopic(['topic2']).read()
+                    expect(String(topic.id)).toBe('topic2')
+                    expect(topic.description).toBe('Second topic')
+                })
+            })
+
+            describe('error', () => {
+                test('topic does not exist', async () => {
+                    await expect(
+                        contracts.sentiment.actions.gettopic(['nonexistent']).read()
+                    ).rejects.toThrow('eosio_assert: topic does not exist')
+                })
+            })
+        })
+
+        describe('action: gettopics', () => {
+            describe('success', () => {
+                test('get all topics', async () => {
+                    await contracts.sentiment.actions
+                        .createtopic(['topic1', 'First topic'])
+                        .send(sentimentContract)
+                    await contracts.sentiment.actions
+                        .createtopic(['topic2', 'Second topic'])
+                        .send(sentimentContract)
+                    await contracts.sentiment.actions
+                        .createtopic(['topic3', 'Third topic'])
+                        .send(sentimentContract)
+
+                    const topics = await contracts.sentiment.actions.gettopics().read()
+                    expect(topics).toHaveLength(3)
+                    expect(String(topics[0].id)).toBe('topic1')
+                    expect(topics[0].description).toBe('First topic')
+                    expect(String(topics[1].id)).toBe('topic2')
+                    expect(topics[1].description).toBe('Second topic')
+                    expect(String(topics[2].id)).toBe('topic3')
+                    expect(topics[2].description).toBe('Third topic')
+                })
+
+                test('returns empty array when no topics exist', async () => {
+                    const topics = await contracts.sentiment.actions.gettopics().read()
+                    expect(topics).toHaveLength(0)
+                })
+            })
+        })
+    })
+
     describe('read operations via table', () => {
         describe('success', () => {
             test('read a single topic', async () => {

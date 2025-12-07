@@ -1,7 +1,7 @@
 import {beforeEach, describe, expect, test} from 'bun:test'
 import {Name} from '@wharfkit/antelope'
 
-import {contracts, resetContracts, sentimentContract} from './setup'
+import {alice, bob, charlie, contracts, resetContracts, sentimentContract} from './setup'
 
 describe('contract: sentiment - Integration Tests', () => {
     beforeEach(async () => {
@@ -41,7 +41,7 @@ describe('contract: sentiment - Integration Tests', () => {
             expect(opposition).toHaveLength(2)
 
             // One user removes their vote
-            await contracts.sentiment.actions.removevote(['charlie', 'debate']).send('charlie')
+            await contracts.sentiment.actions.rmtopicvote(['charlie', 'debate']).send('charlie')
 
             debateVotes = await contracts.sentiment.tables
                 .votes(Name.from('debate').value.value)

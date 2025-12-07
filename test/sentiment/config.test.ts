@@ -1,6 +1,6 @@
 import {beforeEach, describe, expect, test} from 'bun:test'
 
-import {contracts, resetContracts, sentimentContract} from './setup'
+import {alice, contracts, resetContracts, sentimentContract} from './setup'
 
 describe('contract: sentiment - Configuration', () => {
     beforeEach(async () => {
@@ -82,20 +82,20 @@ describe('contract: sentiment - Configuration', () => {
             ).rejects.toThrow('eosio_assert: contract is disabled')
         })
 
-        test('removevote fails when contract is disabled', async () => {
+        test('rmtopicvote fails when contract is disabled', async () => {
             await contracts.sentiment.actions
                 .createtopic(['testtopic', 'Test topic'])
                 .send(sentimentContract)
 
             // Vote while enabled
-            await contracts.sentiment.actions.vote(['alice', 'testtopic', 1]).send('alice')
+            await contracts.sentiment.actions.votetopic(['alice', 'testtopic', 1]).send('alice')
 
             // Disable
             await contracts.sentiment.actions.disable().send(sentimentContract)
 
             // Try to remove vote
             await expect(
-                contracts.sentiment.actions.removevote(['alice', 'testtopic']).send('alice')
+                contracts.sentiment.actions.rmtopicvote(['alice', 'testtopic']).send('alice')
             ).rejects.toThrow('eosio_assert: contract is disabled')
         })
     })
@@ -142,7 +142,7 @@ describe('contract: sentiment - Configuration', () => {
             const topics = await contracts.sentiment.actions.gettopics().read()
             expect(topics).toHaveLength(1)
 
-            const voters = await contracts.sentiment.actions.getvoters(['testtopic']).read()
+            const voters = await contracts.sentiment.actions.gettopicvtrs(['testtopic']).read()
             expect(voters).toHaveLength(1)
         })
     })
