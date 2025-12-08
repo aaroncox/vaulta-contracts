@@ -1,6 +1,6 @@
 import {beforeEach, describe, expect, test} from 'bun:test'
 
-import {alice, contracts, resetContracts, sentimentContract} from './setup'
+import {contracts, resetContracts, sentimentContract} from './setup'
 
 describe('contract: sentiment - Configuration', () => {
     beforeEach(async () => {

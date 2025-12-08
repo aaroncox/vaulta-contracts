@@ -1,4 +1,4 @@
-import {Name, PermissionLevel, Serializer, TimePointSec, Transaction} from '@wharfkit/antelope'
+import {Name} from '@wharfkit/antelope'
 import {blockchain} from '../helpers'
 
 export const sentimentContract = 'sentiment'

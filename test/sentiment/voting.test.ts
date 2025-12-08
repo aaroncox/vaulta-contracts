@@ -1,7 +1,7 @@
 import {beforeEach, describe, expect, test} from 'bun:test'
 import {Name} from '@wharfkit/antelope'
 
-import {alice, bob, charlie, contracts, resetContracts, sentimentContract} from './setup'
+import {contracts, resetContracts, sentimentContract} from './setup'
 
 describe('contract: sentiment - Voting', () => {
     beforeEach(async () => {

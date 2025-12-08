@@ -1,5 +1,4 @@
 import {beforeEach, describe, expect, test} from 'bun:test'
-import {Name, PermissionLevel} from '@wharfkit/antelope'
 
 import {
     alice,
@@ -30,7 +29,7 @@ describe('contract: sentiment - Msig Voting', () => {
 
                 // Verify vote is stored
                 const votes = await contracts.sentiment.tables
-                    .msigvotes(getMsigVotesScope(alice, "testprop"))
+                    .msigvotes(getMsigVotesScope(alice, 'testprop'))
                     .getTableRows()
                 expect(votes).toHaveLength(1)
                 expect(votes[0].voter).toBe('alice')
@@ -45,7 +44,7 @@ describe('contract: sentiment - Msig Voting', () => {
                 await contracts.sentiment.actions.votemsig([bob, alice, 'testprop', 0]).send(bob)
 
                 const votes = await contracts.sentiment.tables
-                    .msigvotes(getMsigVotesScope(alice, "testprop"))
+                    .msigvotes(getMsigVotesScope(alice, 'testprop'))
                     .getTableRows()
                 expect(votes).toHaveLength(1)
                 expect(votes[0].voter).toBe('bob')
@@ -64,7 +63,7 @@ describe('contract: sentiment - Msig Voting', () => {
                     .send(charlie)
 
                 const votes = await contracts.sentiment.tables
-                    .msigvotes(getMsigVotesScope(alice, "testprop"))
+                    .msigvotes(getMsigVotesScope(alice, 'testprop'))
                     .getTableRows()
                 expect(votes).toHaveLength(3)
             })
@@ -78,7 +77,7 @@ describe('contract: sentiment - Msig Voting', () => {
                     .send(alice)
 
                 let votes = await contracts.sentiment.tables
-                    .msigvotes(getMsigVotesScope(alice, "testprop"))
+                    .msigvotes(getMsigVotesScope(alice, 'testprop'))
                     .getTableRows()
                 expect(votes).toHaveLength(1)
                 expect(votes[0].vote_type).toBe(1)
@@ -89,7 +88,7 @@ describe('contract: sentiment - Msig Voting', () => {
                     .send(alice)
 
                 votes = await contracts.sentiment.tables
-                    .msigvotes(getMsigVotesScope(alice, "testprop"))
+                    .msigvotes(getMsigVotesScope(alice, 'testprop'))
                     .getTableRows()
                 expect(votes).toHaveLength(1) // Still just one vote
                 expect(votes[0].vote_type).toBe(0) // Vote type changed
@@ -139,13 +138,13 @@ describe('contract: sentiment - Msig Voting', () => {
 
                 // Verify both votes exist in their respective scopes
                 const aliceProposalVotes = await contracts.sentiment.tables
-                    .msigvotes(getMsigVotesScope(alice, "testprop"))
+                    .msigvotes(getMsigVotesScope(alice, 'testprop'))
                     .getTableRows()
                 expect(aliceProposalVotes).toHaveLength(1)
                 expect(aliceProposalVotes[0].proposer).toBe('alice')
 
                 const bobProposalVotes = await contracts.sentiment.tables
-                    .msigvotes(getMsigVotesScope(bob, "testprop"))
+                    .msigvotes(getMsigVotesScope(bob, 'testprop'))
                     .getTableRows()
                 expect(bobProposalVotes).toHaveLength(1)
                 expect(bobProposalVotes[0].proposer).toBe('bob')
@@ -172,7 +171,7 @@ describe('contract: sentiment - Msig Voting', () => {
                     .send(alice)
 
                 let votes = await contracts.sentiment.tables
-                    .msigvotes(getMsigVotesScope(alice, "testprop"))
+                    .msigvotes(getMsigVotesScope(alice, 'testprop'))
                     .getTableRows()
                 expect(votes).toHaveLength(1)
 
@@ -180,7 +179,7 @@ describe('contract: sentiment - Msig Voting', () => {
                 await contracts.sentiment.actions.rmmsigvote([alice, alice, 'testprop']).send(alice)
 
                 votes = await contracts.sentiment.tables
-                    .msigvotes(getMsigVotesScope(alice, "testprop"))
+                    .msigvotes(getMsigVotesScope(alice, 'testprop'))
                     .getTableRows()
                 expect(votes).toHaveLength(0)
             })
@@ -196,7 +195,7 @@ describe('contract: sentiment - Msig Voting', () => {
                 await contracts.sentiment.actions.rmmsigvote([alice, alice, 'testprop']).send(alice)
 
                 const votes = await contracts.sentiment.tables
-                    .msigvotes(getMsigVotesScope(alice, "testprop"))
+                    .msigvotes(getMsigVotesScope(alice, 'testprop'))
                     .getTableRows()
                 expect(votes).toHaveLength(1)
                 expect(votes[0].voter).toBe('bob')
