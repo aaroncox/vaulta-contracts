@@ -1,0 +1,16 @@
+#include <sentiment/sentiment.hpp>
+
+namespace vaultacontracts {
+// Main entry point - all logic is in modular files
+} // namespace vaultacontracts
+
+// Include modular action implementations
+#include "account.cpp"
+#include "config.cpp"
+#include "msig.cpp"
+#include "topics.cpp"
+#include "weights.cpp"
+
+#ifdef DEBUG
+#include "debug.cpp"
+#endif

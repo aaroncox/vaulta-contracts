@@ -11,6 +11,8 @@ jobs:
                     - 'contracts/api/include/api'
                     - 'contracts/registry/src'
                     - 'contracts/registry/include/registry'
+                    - 'contracts/sentiment/src'
+                    - 'contracts/sentiment/include/sentiment'
         steps:
             - uses: actions/checkout@v3
             - name: Run clang-format style check
