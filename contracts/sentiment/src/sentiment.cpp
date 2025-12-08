@@ -5,11 +5,11 @@ namespace vaultacontracts {
 } // namespace vaultacontracts
 
 // Include modular action implementations
-#include "config.cpp"
-#include "weights.cpp"
-#include "topics.cpp"
 #include "account.cpp"
+#include "config.cpp"
 #include "msig.cpp"
+#include "topics.cpp"
+#include "weights.cpp"
 
 #ifdef DEBUG
 #include "debug.cpp"

@@ -136,6 +136,10 @@ check: cppcheck jscheck
 cppcheck:
 	clang-format --dry-run --Werror contracts/**/src/*.cpp contracts/**/include/**/*.hpp shared/include/antelope/*.hpp
 
+.PHONY: format
+format:
+	clang-format -i contracts/**/src/*.cpp contracts/**/include/**/*.hpp shared/include/antelope/*.hpp
+
 .PHONY: jscheck
 jscheck: node_modules
 	@${BIN}/eslint test --ext .ts --max-warnings 0 --format unix && echo "Ok"
