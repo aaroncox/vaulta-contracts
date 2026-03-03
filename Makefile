@@ -5,9 +5,9 @@ SHELL := /bin/bash
 
 build: build/production
 
-build/debug: build/api/debug build/mockreceiver/debug build/registry/debug build/sentiment/debug build/tokens/debug
+build/debug: build/api/debug build/lightacct/debug build/mockreceiver/debug build/mocksystem/debug build/registry/debug build/sentiment/debug build/tokens/debug
 
-build/production: build/api/production build/registry/production build/sentiment/production build/tokens/production
+build/production: build/api/production build/lightacct/production build/registry/production build/sentiment/production build/tokens/production
 
 build/api:
 	make -C contracts/api build
@@ -24,6 +24,15 @@ build/create/debug:
 build/api/production:
 	make -C contracts/api build/production
 
+build/lightacct:
+	make -C contracts/lightacct build
+
+build/lightacct/debug:
+	make -C contracts/lightacct build/debug
+
+build/lightacct/production:
+	make -C contracts/lightacct build/production
+
 build/mockreceiver:
 	make -C contracts/mockreceiver build
 
@@ -31,7 +40,13 @@ build/mockreceiver/debug:
 	make -C contracts/mockreceiver build/debug
 
 build/mockreceiver/production:
-	make -C contracts/mockreceiver build/production	
+	make -C contracts/mockreceiver build/production
+
+build/mocksystem:
+	make -C contracts/mocksystem build
+
+build/mocksystem/debug:
+	make -C contracts/mocksystem build/debug
 
 build/registry:
 	make -C contracts/registry build
@@ -72,7 +87,7 @@ mainnet/sentiment:
 # TESTNET
 
 .PHONY: testnet
-testnet: testnet/api testnet/mockreceiver testnet/registry testnet/sentiment testnet/tokens
+testnet: testnet/api testnet/lightacct testnet/mockreceiver testnet/registry testnet/sentiment testnet/tokens
 
 .PHONY: testnet/api
 testnet/api:
@@ -81,6 +96,10 @@ testnet/api:
 .PHONY: testnet/create
 testnet/create:
 	make -C contracts/create testnet
+
+.PHONY: testnet/lightacct
+testnet/lightacct:
+	make -C contracts/lightacct testnet
 
 .PHONY: testnet/mockreceiver
 testnet/mockreceiver:
@@ -113,6 +132,9 @@ testnet/reset: codegen testnet/wipe testnet/setup
 
 test/api: build/api/debug node_modules codegen
 	bun test -t "contract: api"
+
+test/lightacct: build/lightacct/debug build/mocksystem/debug node_modules codegen
+	bun test -t "contract: lightacct"
 
 test/mockreceiver: build/mockreceiver/debug node_modules codegen
 	bun test -t "contract: mockreceiver"
@@ -150,7 +172,7 @@ test: build/debug codegen node_modules
 # CODEGEN
 
 .PHONY: codegen
-codegen: ./codegen/api.ts ./codegen/mockreceiver.ts ./codegen/registry.ts ./codegen/sentiment.ts ./codegen/token.ts ./codegen/tokens.ts
+codegen: ./codegen/api.ts ./codegen/lightacct.ts ./codegen/mockreceiver.ts ./codegen/registry.ts ./codegen/sentiment.ts ./codegen/token.ts ./codegen/tokens.ts
 
 .PHONY: codegen/clean
 codegen/clean:
@@ -158,6 +180,9 @@ codegen/clean:
 
 ./codegen/api.ts:
 	${BIN}/wharfkit generate --json ./contracts/api/build/api.abi --file ./codegen/api.ts api
+
+./codegen/lightacct.ts:
+	${BIN}/wharfkit generate --json ./contracts/lightacct/build/lightacct.abi --file ./codegen/lightacct.ts lightacct
 
 ./codegen/mockreceiver.ts:
 	${BIN}/wharfkit generate --json ./contracts/mockreceiver/build/mockreceiver.abi --file ./codegen/mockreceiver.ts mockreceiver

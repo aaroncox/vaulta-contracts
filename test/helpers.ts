@@ -1,6 +1,18 @@
 import {Blockchain} from '@vaulta/vert'
 import {Asset, Name, TimePointSec} from '@wharfkit/antelope'
 
+// Workaround for @vaulta/vert bug: inline actions decoded from WASM memory hold
+// Uint8Array views that become invalid after memory grows, causing PublicKey.toString()
+// to fail during trace logging. Safe to swallow since this is debug-only logging.
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+const vertUtils = require('@vaulta/vert/dist/antelope/utils')
+const _origLogTrace = vertUtils.logExecutionTrace
+vertUtils.logExecutionTrace = (trace: unknown) => {
+    try {
+        _origLogTrace(trace)
+    } catch {}
+}
+
 import * as TokenContract from '../codegen/token.ts'
 
 export const blockchain = new Blockchain()
