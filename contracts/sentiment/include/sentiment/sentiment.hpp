@@ -1,11 +1,15 @@
 #pragma once
 
+#include <eosio/asset.hpp>
 #include <eosio/eosio.hpp>
 #include <eosio/singleton.hpp>
 #include <eosio/system.hpp>
 
 #include <eosio.msig/eosio.msig.hpp>
 #include <eosio.system/eosio.system.hpp>
+#include <eosio.token/eosio.token.hpp>
+
+#include <antelope/antelope.hpp>
 
 #include <string>
 #include <vector>
@@ -22,20 +26,36 @@ class [[eosio::contract("sentiment")]] sentiment : public contract
 public:
    using contract::contract;
 
+   struct fees_config
+   {
+      antelope::token_definition token;
+      name                       receiver;
+      asset                      createtopic;
+      name                       action = "transfer"_n;
+   };
+
    /** Table Definitions */
    struct [[eosio::table("config")]] config_row
    {
-      // Whether or not the contract is enabled
-      bool enabled = false;
-      // System contract to query for voting weight
-      name system_contract = "eosio"_n;
+      bool        enabled         = false;
+      name        system_contract = "eosio"_n;
+      fees_config fees;
    };
    typedef eosio::singleton<"config"_n, config_row> config_table;
+
+   struct [[eosio::table("balance")]] balance_row
+   {
+      name     account;
+      asset    balance;
+      uint64_t primary_key() const { return account.value; }
+   };
+   typedef eosio::multi_index<"balance"_n, balance_row> balance_table;
 
    struct [[eosio::table]] topic_row
    {
       name   id;
       string description;
+      name creator;
 
       uint64_t primary_key() const { return id.value; }
    };
@@ -81,6 +101,7 @@ public:
    {
       name   id;
       string description;
+      name   creator;
    };
 
    struct get_topic_vote_response
@@ -118,11 +139,12 @@ public:
    [[eosio::action]] void disable();
    using disable_action = eosio::action_wrapper<"disable"_n, &sentiment::disable>;
 
-   [[eosio::action]] void setconfig(const config_row& config);
+   [[eosio::action]] void setconfig(const name& system_contract, const name& token_contract, const name& token_action,
+                                    const symbol& token_symbol, const name& fee_receiver, const asset& createtopic_fee);
    using setconfig_action = eosio::action_wrapper<"setconfig"_n, &sentiment::setconfig>;
 
    /** Topic Management */
-   [[eosio::action]] void createtopic(const name& id, const string& description);
+   [[eosio::action]] void createtopic(const name& creator, const name& id, const string& description, const asset& payment);
    using createtopic_action = eosio::action_wrapper<"createtopic"_n, &sentiment::createtopic>;
 
    [[eosio::action]] void updatetopic(const name& id, const string& description);
@@ -130,6 +152,16 @@ public:
 
    [[eosio::action]] void deletetopic(const name& id);
    using deletetopic_action = eosio::action_wrapper<"deletetopic"_n, &sentiment::deletetopic>;
+
+   /** Balance Management */
+   [[eosio::on_notify("*::transfer")]] void
+   on_transfer(const name& from, const name& to, const asset& quantity, const string& memo);
+
+   [[eosio::action]] void open(const name& account);
+   using open_action = eosio::action_wrapper<"open"_n, &sentiment::open>;
+
+   [[eosio::action]] void withdraw(const name& account, const asset& quantity);
+   using withdraw_action = eosio::action_wrapper<"withdraw"_n, &sentiment::withdraw>;
 
    /** Voting Actions */
    [[eosio::action]] void votetopic(const name& voter, const name& topic_id, uint8_t vote_type);
@@ -218,6 +250,10 @@ private:
    config_row get_config();
    void       require_enabled(const config_row& config) { check(config.enabled, "contract is disabled"); }
    get_voter_weight_response get_voter_weight(const config_row& config, const name& voter);
+
+   void  add_balance(const name& account, const asset& quantity);
+   asset get_balance(const name& account, const symbol& token_symbol);
+   void  remove_balance(const name& account, const asset& quantity);
 
 #ifdef DEBUG
    template <typename T>

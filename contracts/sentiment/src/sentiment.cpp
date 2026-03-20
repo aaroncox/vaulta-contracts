@@ -6,6 +6,7 @@ namespace vaultacontracts {
 
 // Include modular action implementations
 #include "account.cpp"
+#include "balance.cpp"
 #include "config.cpp"
 #include "msig.cpp"
 #include "topics.cpp"

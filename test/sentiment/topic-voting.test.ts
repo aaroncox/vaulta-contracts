@@ -1,7 +1,7 @@
 import {beforeEach, describe, expect, test} from 'bun:test'
 import {Name} from '@wharfkit/antelope'
 
-import {contracts, resetContracts, sentimentContract} from './setup'
+import {contracts, createTopic, resetContracts, sentimentContract} from './setup'
 
 describe('contract: sentiment - Voting', () => {
     beforeEach(async () => {
@@ -11,9 +11,7 @@ describe('contract: sentiment - Voting', () => {
     describe('action: vote', () => {
         describe('success', () => {
             test('user can vote in support of a topic', async () => {
-                await contracts.sentiment.actions
-                    .createtopic(['testtopic', 'Test topic'])
-                    .send(sentimentContract)
+                await createTopic('alice', 'testtopic', 'Test topic')
 
                 await contracts.sentiment.actions.vote(['alice', 'testtopic', 1]).send('alice')
 
@@ -27,9 +25,7 @@ describe('contract: sentiment - Voting', () => {
             })
 
             test('user can vote in opposition to a topic', async () => {
-                await contracts.sentiment.actions
-                    .createtopic(['testtopic', 'Test topic'])
-                    .send(sentimentContract)
+                await createTopic('alice', 'testtopic', 'Test topic')
 
                 await contracts.sentiment.actions.vote(['bob', 'testtopic', 0]).send('bob')
 
@@ -42,9 +38,7 @@ describe('contract: sentiment - Voting', () => {
             })
 
             test('multiple users can vote on the same topic', async () => {
-                await contracts.sentiment.actions
-                    .createtopic(['testtopic', 'Test topic'])
-                    .send(sentimentContract)
+                await createTopic('alice', 'testtopic', 'Test topic')
 
                 await contracts.sentiment.actions.vote(['alice', 'testtopic', 1]).send('alice')
                 await contracts.sentiment.actions.vote(['bob', 'testtopic', 1]).send('bob')
@@ -57,12 +51,8 @@ describe('contract: sentiment - Voting', () => {
             })
 
             test('user can vote on multiple topics', async () => {
-                await contracts.sentiment.actions
-                    .createtopic(['topic1', 'First topic'])
-                    .send(sentimentContract)
-                await contracts.sentiment.actions
-                    .createtopic(['topic2', 'Second topic'])
-                    .send(sentimentContract)
+                await createTopic('alice', 'topic1', 'First topic')
+                await createTopic('alice', 'topic2', 'Second topic')
 
                 await contracts.sentiment.actions.vote(['alice', 'topic1', 1]).send('alice')
                 await contracts.sentiment.actions.vote(['alice', 'topic2', 0]).send('alice')
@@ -89,9 +79,7 @@ describe('contract: sentiment - Voting', () => {
             })
 
             test('cannot vote with invalid vote_type', async () => {
-                await contracts.sentiment.actions
-                    .createtopic(['testtopic', 'Test topic'])
-                    .send(sentimentContract)
+                await createTopic('alice', 'testtopic', 'Test topic')
 
                 await expect(
                     contracts.sentiment.actions.vote(['alice', 'testtopic', 2]).send('alice')
@@ -99,11 +87,8 @@ describe('contract: sentiment - Voting', () => {
             })
 
             test('can vote twice on same topic (upsert behavior)', async () => {
-                await contracts.sentiment.actions
-                    .createtopic(['testtopic', 'Test topic'])
-                    .send(sentimentContract)
+                await createTopic('alice', 'testtopic', 'Test topic')
 
-                // First vote (support)
                 await contracts.sentiment.actions.vote(['alice', 'testtopic', 1]).send('alice')
 
                 let votes = await contracts.sentiment.tables
@@ -112,20 +97,17 @@ describe('contract: sentiment - Voting', () => {
                 expect(votes).toHaveLength(1)
                 expect(votes[0].vote_type).toBe(1)
 
-                // Second vote (opposition) - should update
                 await contracts.sentiment.actions.vote(['alice', 'testtopic', 0]).send('alice')
 
                 votes = await contracts.sentiment.tables
                     .votes(Name.from('testtopic').value.value)
                     .getTableRows()
-                expect(votes).toHaveLength(1) // Still just one vote
-                expect(votes[0].vote_type).toBe(0) // Vote type changed
+                expect(votes).toHaveLength(1)
+                expect(votes[0].vote_type).toBe(0)
             })
 
             test('missing authorization', async () => {
-                await contracts.sentiment.actions
-                    .createtopic(['testtopic', 'Test topic'])
-                    .send(sentimentContract)
+                await createTopic('alice', 'testtopic', 'Test topic')
 
                 await expect(
                     contracts.sentiment.actions.vote(['alice', 'testtopic', 1]).send('bob')
@@ -137,9 +119,7 @@ describe('contract: sentiment - Voting', () => {
     describe('action: changevote', () => {
         describe('success', () => {
             test('user can change vote from support to opposition', async () => {
-                await contracts.sentiment.actions
-                    .createtopic(['testtopic', 'Test topic'])
-                    .send(sentimentContract)
+                await createTopic('alice', 'testtopic', 'Test topic')
 
                 await contracts.sentiment.actions.vote(['alice', 'testtopic', 1]).send('alice')
 
@@ -154,9 +134,7 @@ describe('contract: sentiment - Voting', () => {
             })
 
             test('user can change vote from opposition to support', async () => {
-                await contracts.sentiment.actions
-                    .createtopic(['testtopic', 'Test topic'])
-                    .send(sentimentContract)
+                await createTopic('alice', 'testtopic', 'Test topic')
 
                 await contracts.sentiment.actions.vote(['alice', 'testtopic', 0]).send('alice')
 
@@ -173,9 +151,7 @@ describe('contract: sentiment - Voting', () => {
 
         describe('error', () => {
             test('cannot change vote that does not exist', async () => {
-                await contracts.sentiment.actions
-                    .createtopic(['testtopic', 'Test topic'])
-                    .send(sentimentContract)
+                await createTopic('alice', 'testtopic', 'Test topic')
 
                 await expect(
                     contracts.sentiment.actions.changevote(['alice', 'testtopic', 1]).send('alice')
@@ -183,9 +159,7 @@ describe('contract: sentiment - Voting', () => {
             })
 
             test('cannot change vote to same type', async () => {
-                await contracts.sentiment.actions
-                    .createtopic(['testtopic', 'Test topic'])
-                    .send(sentimentContract)
+                await createTopic('alice', 'testtopic', 'Test topic')
 
                 await contracts.sentiment.actions.vote(['alice', 'testtopic', 1]).send('alice')
 
@@ -203,9 +177,7 @@ describe('contract: sentiment - Voting', () => {
             })
 
             test('missing authorization', async () => {
-                await contracts.sentiment.actions
-                    .createtopic(['testtopic', 'Test topic'])
-                    .send(sentimentContract)
+                await createTopic('alice', 'testtopic', 'Test topic')
 
                 await contracts.sentiment.actions.vote(['alice', 'testtopic', 1]).send('alice')
 
@@ -219,9 +191,7 @@ describe('contract: sentiment - Voting', () => {
     describe('action: rmtopicvote', () => {
         describe('success', () => {
             test('user can remove their support vote', async () => {
-                await contracts.sentiment.actions
-                    .createtopic(['testtopic', 'Test topic'])
-                    .send(sentimentContract)
+                await createTopic('alice', 'testtopic', 'Test topic')
 
                 await contracts.sentiment.actions.votetopic(['alice', 'testtopic', 1]).send('alice')
 
@@ -234,9 +204,7 @@ describe('contract: sentiment - Voting', () => {
             })
 
             test('user can remove their opposition vote', async () => {
-                await contracts.sentiment.actions
-                    .createtopic(['testtopic', 'Test topic'])
-                    .send(sentimentContract)
+                await createTopic('alice', 'testtopic', 'Test topic')
 
                 await contracts.sentiment.actions.votetopic(['alice', 'testtopic', 0]).send('alice')
 
@@ -249,9 +217,7 @@ describe('contract: sentiment - Voting', () => {
             })
 
             test('removing vote does not affect other votes', async () => {
-                await contracts.sentiment.actions
-                    .createtopic(['testtopic', 'Test topic'])
-                    .send(sentimentContract)
+                await createTopic('alice', 'testtopic', 'Test topic')
 
                 await contracts.sentiment.actions.votetopic(['alice', 'testtopic', 1]).send('alice')
                 await contracts.sentiment.actions.votetopic(['bob', 'testtopic', 1]).send('bob')
@@ -268,9 +234,7 @@ describe('contract: sentiment - Voting', () => {
 
         describe('error', () => {
             test('cannot remove vote that does not exist', async () => {
-                await contracts.sentiment.actions
-                    .createtopic(['testtopic', 'Test topic'])
-                    .send(sentimentContract)
+                await createTopic('alice', 'testtopic', 'Test topic')
 
                 await expect(
                     contracts.sentiment.actions.rmtopicvote(['alice', 'testtopic']).send('alice')
@@ -284,9 +248,7 @@ describe('contract: sentiment - Voting', () => {
             })
 
             test('missing authorization', async () => {
-                await contracts.sentiment.actions
-                    .createtopic(['testtopic', 'Test topic'])
-                    .send(sentimentContract)
+                await createTopic('alice', 'testtopic', 'Test topic')
 
                 await contracts.sentiment.actions.votetopic(['alice', 'testtopic', 1]).send('alice')
 
@@ -300,27 +262,21 @@ describe('contract: sentiment - Voting', () => {
     describe('action: bulkrmvotes', () => {
         describe('success', () => {
             test('can remove specified number of votes', async () => {
-                await contracts.sentiment.actions
-                    .createtopic(['testtopic', 'Test topic'])
-                    .send(sentimentContract)
+                await createTopic('alice', 'testtopic', 'Test topic')
 
-                // Create 3 votes
                 await contracts.sentiment.actions.vote(['alice', 'testtopic', 1]).send('alice')
                 await contracts.sentiment.actions.vote(['bob', 'testtopic', 1]).send('bob')
                 await contracts.sentiment.actions.vote(['charlie', 'testtopic', 0]).send('charlie')
 
-                // Verify all votes exist
                 let votes = await contracts.sentiment.tables
                     .votes(Name.from('testtopic').value.value)
                     .getTableRows()
                 expect(votes).toHaveLength(3)
 
-                // Remove 2 votes
                 await contracts.sentiment.actions
                     .bulkrmvotes(['testtopic', 2])
                     .send(sentimentContract)
 
-                // Verify only 1 vote remains
                 votes = await contracts.sentiment.tables
                     .votes(Name.from('testtopic').value.value)
                     .getTableRows()
@@ -328,21 +284,16 @@ describe('contract: sentiment - Voting', () => {
             })
 
             test('can remove all votes if num_votes exceeds total', async () => {
-                await contracts.sentiment.actions
-                    .createtopic(['testtopic', 'Test topic'])
-                    .send(sentimentContract)
+                await createTopic('alice', 'testtopic', 'Test topic')
 
-                // Create 3 votes
                 await contracts.sentiment.actions.vote(['alice', 'testtopic', 1]).send('alice')
                 await contracts.sentiment.actions.vote(['bob', 'testtopic', 1]).send('bob')
                 await contracts.sentiment.actions.vote(['charlie', 'testtopic', 0]).send('charlie')
 
-                // Try to remove 10 votes (more than exist)
                 await contracts.sentiment.actions
                     .bulkrmvotes(['testtopic', 10])
                     .send(sentimentContract)
 
-                // Verify all votes are removed
                 const votes = await contracts.sentiment.tables
                     .votes(Name.from('testtopic').value.value)
                     .getTableRows()
@@ -350,19 +301,15 @@ describe('contract: sentiment - Voting', () => {
             })
 
             test('can remove zero votes', async () => {
-                await contracts.sentiment.actions
-                    .createtopic(['testtopic', 'Test topic'])
-                    .send(sentimentContract)
+                await createTopic('alice', 'testtopic', 'Test topic')
 
                 await contracts.sentiment.actions.vote(['alice', 'testtopic', 1]).send('alice')
                 await contracts.sentiment.actions.vote(['bob', 'testtopic', 1]).send('bob')
 
-                // Remove 0 votes
                 await contracts.sentiment.actions
                     .bulkrmvotes(['testtopic', 0])
                     .send(sentimentContract)
 
-                // Verify votes still exist
                 const votes = await contracts.sentiment.tables
                     .votes(Name.from('testtopic').value.value)
                     .getTableRows()
@@ -370,29 +317,21 @@ describe('contract: sentiment - Voting', () => {
             })
 
             test('removing votes from one topic does not affect other topics', async () => {
-                await contracts.sentiment.actions
-                    .createtopic(['topic1', 'First topic'])
-                    .send(sentimentContract)
-                await contracts.sentiment.actions
-                    .createtopic(['topic2', 'Second topic'])
-                    .send(sentimentContract)
+                await createTopic('alice', 'topic1', 'First topic')
+                await createTopic('alice', 'topic2', 'Second topic')
 
-                // Add votes to both topics
                 await contracts.sentiment.actions.vote(['alice', 'topic1', 1]).send('alice')
                 await contracts.sentiment.actions.vote(['bob', 'topic1', 1]).send('bob')
                 await contracts.sentiment.actions.vote(['alice', 'topic2', 0]).send('alice')
                 await contracts.sentiment.actions.vote(['bob', 'topic2', 0]).send('bob')
 
-                // Remove votes from topic1
                 await contracts.sentiment.actions.bulkrmvotes(['topic1', 2]).send(sentimentContract)
 
-                // Verify topic1 votes are removed
                 const votes1 = await contracts.sentiment.tables
                     .votes(Name.from('topic1').value.value)
                     .getTableRows()
                 expect(votes1).toHaveLength(0)
 
-                // Verify topic2 votes are intact
                 const votes2 = await contracts.sentiment.tables
                     .votes(Name.from('topic2').value.value)
                     .getTableRows()
@@ -410,9 +349,7 @@ describe('contract: sentiment - Voting', () => {
             })
 
             test('missing authorization - requires contract authority', async () => {
-                await contracts.sentiment.actions
-                    .createtopic(['testtopic', 'Test topic'])
-                    .send(sentimentContract)
+                await createTopic('alice', 'testtopic', 'Test topic')
 
                 await contracts.sentiment.actions.vote(['alice', 'testtopic', 1]).send('alice')
 
@@ -426,9 +363,7 @@ describe('contract: sentiment - Voting', () => {
     describe('action: gettopicvote (read-only)', () => {
         describe('success', () => {
             test('returns vote details for support vote', async () => {
-                await contracts.sentiment.actions
-                    .createtopic(['testtopic', 'Test topic'])
-                    .send(sentimentContract)
+                await createTopic('alice', 'testtopic', 'Test topic')
 
                 await contracts.sentiment.actions.vote(['alice', 'testtopic', 1]).send('alice')
 
@@ -442,9 +377,7 @@ describe('contract: sentiment - Voting', () => {
             })
 
             test('returns vote details for opposition vote', async () => {
-                await contracts.sentiment.actions
-                    .createtopic(['testtopic', 'Test topic'])
-                    .send(sentimentContract)
+                await createTopic('alice', 'testtopic', 'Test topic')
 
                 await contracts.sentiment.actions.vote(['bob', 'testtopic', 0]).send('bob')
 
@@ -460,9 +393,7 @@ describe('contract: sentiment - Voting', () => {
 
         describe('error', () => {
             test('vote does not exist', async () => {
-                await contracts.sentiment.actions
-                    .createtopic(['testtopic', 'Test topic'])
-                    .send(sentimentContract)
+                await createTopic('alice', 'testtopic', 'Test topic')
 
                 await expect(
                     contracts.sentiment.actions.gettopicvote(['alice', 'testtopic']).read()
@@ -474,9 +405,7 @@ describe('contract: sentiment - Voting', () => {
     describe('action: gettopicvtrs (read-only)', () => {
         describe('success', () => {
             test('returns all voters for a topic', async () => {
-                await contracts.sentiment.actions
-                    .createtopic(['testtopic', 'Test topic'])
-                    .send(sentimentContract)
+                await createTopic('alice', 'testtopic', 'Test topic')
 
                 await contracts.sentiment.actions.vote(['alice', 'testtopic', 1]).send('alice')
                 await contracts.sentiment.actions.vote(['bob', 'testtopic', 0]).send('bob')
@@ -491,9 +420,7 @@ describe('contract: sentiment - Voting', () => {
             })
 
             test('returns empty array for topic with no votes', async () => {
-                await contracts.sentiment.actions
-                    .createtopic(['testtopic', 'Test topic'])
-                    .send(sentimentContract)
+                await createTopic('alice', 'testtopic', 'Test topic')
 
                 const voters = await contracts.sentiment.actions.gettopicvtrs(['testtopic']).read()
 
@@ -501,9 +428,7 @@ describe('contract: sentiment - Voting', () => {
             })
 
             test('vote counts are correctly reflected', async () => {
-                await contracts.sentiment.actions
-                    .createtopic(['testtopic', 'Test topic'])
-                    .send(sentimentContract)
+                await createTopic('alice', 'testtopic', 'Test topic')
 
                 await contracts.sentiment.actions.vote(['alice', 'testtopic', 1]).send('alice')
                 await contracts.sentiment.actions.vote(['bob', 'testtopic', 0]).send('bob')
@@ -530,9 +455,7 @@ describe('contract: sentiment - Voting', () => {
     describe('read-only vote queries', () => {
         describe('success', () => {
             test('get vote counts in topic response', async () => {
-                await contracts.sentiment.actions
-                    .createtopic(['testtopic', 'Test topic'])
-                    .send(sentimentContract)
+                await createTopic('alice', 'testtopic', 'Test topic')
 
                 await contracts.sentiment.actions.vote(['alice', 'testtopic', 1]).send('alice')
                 await contracts.sentiment.actions.vote(['bob', 'testtopic', 1]).send('bob')
@@ -543,9 +466,7 @@ describe('contract: sentiment - Voting', () => {
             })
 
             test('vote counts are updated correctly after changes', async () => {
-                await contracts.sentiment.actions
-                    .createtopic(['testtopic', 'Test topic'])
-                    .send(sentimentContract)
+                await createTopic('alice', 'testtopic', 'Test topic')
 
                 await contracts.sentiment.actions.vote(['alice', 'testtopic', 1]).send('alice')
                 await contracts.sentiment.actions.vote(['bob', 'testtopic', 0]).send('bob')
@@ -562,9 +483,7 @@ describe('contract: sentiment - Voting', () => {
             })
 
             test('get all voters for a topic', async () => {
-                await contracts.sentiment.actions
-                    .createtopic(['testtopic', 'Test topic'])
-                    .send(sentimentContract)
+                await createTopic('alice', 'testtopic', 'Test topic')
 
                 await contracts.sentiment.actions.vote(['alice', 'testtopic', 1]).send('alice')
                 await contracts.sentiment.actions.vote(['bob', 'testtopic', 0]).send('bob')
@@ -593,8 +512,6 @@ describe('contract: sentiment - Voting', () => {
             })
 
             test('returns weight for account with staked tokens', async () => {
-                // Note: In a real test environment, you would first stake tokens for the account
-                // This test verifies the method works, but returns 0 since we haven't set up staking
                 const result = await contracts.sentiment.actions.getweight(['bob']).read()
                 expect(result).toBeDefined()
                 expect(String(result.voter)).toBe('bob')

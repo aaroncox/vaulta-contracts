@@ -16,6 +16,9 @@ void sentiment::clear_table(T& table, uint64_t rows_to_clear)
    config_table _config(get_self(), get_self().value);
    _config.remove();
 
+   balance_table balances(get_self(), get_self().value);
+   clear_table(balances, -1);
+
    // Clear all votes for all topics
    topics_table topics(get_self(), get_self().value);
    for (auto topic_itr = topics.begin(); topic_itr != topics.end(); ++topic_itr) {

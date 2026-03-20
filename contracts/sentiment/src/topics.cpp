@@ -2,18 +2,38 @@
 
 namespace vaultacontracts {
 
-[[eosio::action]] void sentiment::createtopic(const name& id, const string& description)
+[[eosio::action]] void
+sentiment::createtopic(const name& creator, const name& id, const string& description, const asset& payment)
 {
-   require_auth(get_self());
+   require_auth(creator);
+
+   auto config = get_config();
+   require_enabled(config);
 
    topics_table topics(get_self(), get_self().value);
 
    auto itr = topics.find(id.value);
    check(itr == topics.end(), "topic with this ID already exists");
 
-   topics.emplace(get_self(), [&](auto& row) {
+   check(payment.symbol == config.fees.token.symbol, "incorrect payment symbol");
+   check(payment.amount == config.fees.createtopic.amount, "incorrect payment amount");
+
+   asset contract_balance = get_balance(creator, config.fees.token.symbol);
+   check(contract_balance.amount >= payment.amount, "insufficient contract balance to pay topic creation fee");
+
+   remove_balance(creator, payment);
+
+   action(
+      permission_level{get_self(), eosiosystem::system_contract::active_permission},
+      config.fees.token.contract,
+      config.fees.action,
+      std::make_tuple(get_self(), config.fees.receiver, payment, string("sentiment topic creation fee"))
+   ).send();
+
+   topics.emplace(creator, [&](auto& row) {
       row.id          = id;
       row.description = description;
+      row.creator     = creator;
    });
 }
 
@@ -55,7 +75,7 @@ namespace vaultacontracts {
    auto itr = topics.find(id.value);
    check(itr != topics.end(), "topic does not exist");
 
-   return get_topic_response{.id = itr->id, .description = itr->description};
+   return get_topic_response{.id = itr->id, .description = itr->description, .creator = itr->creator};
 }
 
 [[eosio::action, eosio::read_only]] vector<sentiment::get_topic_response> sentiment::gettopics()
@@ -64,7 +84,7 @@ namespace vaultacontracts {
    vector<sentiment::get_topic_response> results;
 
    for (auto itr = topics.begin(); itr != topics.end(); ++itr) {
-      results.push_back(get_topic_response{.id = itr->id, .description = itr->description});
+      results.push_back(get_topic_response{.id = itr->id, .description = itr->description, .creator = itr->creator});
    }
 
    return results;

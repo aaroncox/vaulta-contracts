@@ -106,6 +106,10 @@ public:
     */
    [[eosio::action]]
    void transfer(const name& from, const name& to, const asset& quantity, const string& memo);
+
+   [[eosio::action]]
+   void swapto(const name& from, const name& to, const asset& quantity, const string& memo);
+
    /**
     * Allows `ram_payer` to create an account `owner` with zero balance for
     * token `symbol` at the expense of `ram_payer`.
@@ -161,6 +165,7 @@ public:
    using issue_action        = eosio::action_wrapper<"issue"_n, &token::issue>;
    using retire_action       = eosio::action_wrapper<"retire"_n, &token::retire>;
    using transfer_action     = eosio::action_wrapper<"transfer"_n, &token::transfer>;
+   using swapto_action       = eosio::action_wrapper<"swapto"_n, &token::swapto>;
    using open_action         = eosio::action_wrapper<"open"_n, &token::open>;
    using close_action        = eosio::action_wrapper<"close"_n, &token::close>;
    using issuefixed_action   = eosio::action_wrapper<"issuefixed"_n, &token::issuefixed>;

@@ -1,11 +1,27 @@
-import {Name} from '@wharfkit/antelope'
+import {Asset, Name} from '@wharfkit/antelope'
 import {blockchain} from '../helpers'
 
 export const sentimentContract = 'sentiment'
 export const msigContract = 'eosio.msig'
+export const tokenContract = 'core.vaulta'
+export const faketokenContract = 'fake.token'
+export const feeReceiver = 'eosio.fees'
 export const alice = 'alice'
 export const bob = 'bob'
 export const charlie = 'charlie'
+
+export const defaultTokenSymbol = '4,A'
+export const topicFee = Asset.fromFloat(1, defaultTokenSymbol)
+export const defaultInitialBalance = Asset.fromFloat(1000, defaultTokenSymbol)
+
+export const defaultSetconfigArgs = [
+    'eosio',
+    tokenContract,
+    'transfer',
+    defaultTokenSymbol,
+    feeReceiver,
+    String(topicFee),
+]
 
 export const contracts = {
     sentiment: blockchain.createContract(
@@ -14,13 +30,66 @@ export const contracts = {
         true
     ),
     msig: blockchain.createContract(msigContract, `./shared/include/eosio.msig/eosio.msig`, true),
+    token: blockchain.createContract(tokenContract, './shared/include/eosio.token/eosio.token', true),
+    faketoken: blockchain.createContract(
+        faketokenContract,
+        './shared/include/eosio.token/eosio.token',
+        true
+    ),
 }
 
 export async function resetContracts() {
     await blockchain.resetTables()
-    blockchain.createAccounts(alice, bob, charlie)
+    blockchain.createAccounts(alice, bob, charlie, feeReceiver)
+
+    const supply = Asset.fromFloat(1000000000, defaultTokenSymbol)
+    await contracts.token.actions.create([tokenContract, String(supply)]).send()
+    await contracts.token.actions.issue([tokenContract, String(supply), '']).send()
+
+    await contracts.token.actions
+        .transfer([tokenContract, alice, String(defaultInitialBalance), ''])
+        .send()
+    await contracts.token.actions
+        .transfer([tokenContract, bob, String(defaultInitialBalance), ''])
+        .send()
+    await contracts.token.actions
+        .transfer([tokenContract, charlie, String(defaultInitialBalance), ''])
+        .send()
+    await contracts.token.actions
+        .open([feeReceiver, defaultTokenSymbol, feeReceiver])
+        .send(feeReceiver)
+
+    const fakesupply = '1000000000.0000 A'
+    await contracts.faketoken.actions.create([faketokenContract, fakesupply]).send()
+    await contracts.faketoken.actions.issue([faketokenContract, fakesupply, '']).send()
+    await contracts.faketoken.actions.transfer([faketokenContract, alice, '1000.0000 A', '']).send()
+    await contracts.faketoken.actions.transfer([faketokenContract, bob, '1000.0000 A', '']).send()
+
     await contracts.sentiment.actions.reset().send()
+    await contracts.sentiment.actions.setconfig(defaultSetconfigArgs).send(sentimentContract)
     await contracts.sentiment.actions.enable().send(sentimentContract)
+}
+
+export async function openBalance(account: string) {
+    const balances = contracts.sentiment.tables.balance(Name.from(sentimentContract).value.value)
+    const row = balances.getTableRow(Name.from(account).value.value)
+    if (!row) {
+        await contracts.sentiment.actions.open([account]).send(account)
+    }
+}
+
+export async function depositTokens(account: string, amount: string) {
+    await openBalance(account)
+    await contracts.token.actions
+        .transfer([account, sentimentContract, amount, ''])
+        .send(account)
+}
+
+export async function createTopic(creator: string, id: string, description: string) {
+    await depositTokens(creator, String(topicFee))
+    await contracts.sentiment.actions
+        .createtopic([creator, id, description, String(topicFee)])
+        .send(creator)
 }
 
 /**
@@ -31,12 +100,10 @@ export async function resetContracts() {
  * @param proposalName - Name of the proposal
  */
 export async function createMsigProposal(proposer: string, proposalName: string) {
-    // Use Vert's TableView.set to insert the proposal row directly
     const scope = Name.from(proposer).value.value
     const primaryKey = Name.from(proposalName).value.value
     const payer = Name.from(proposer)
 
-    // Access the proposals table and insert the row
     const tableView = contracts.msig.tables.proposal(scope)
     tableView.set(primaryKey, payer, {
         proposal_name: proposalName,
@@ -55,9 +122,7 @@ export async function createMsigProposal(proposer: string, proposalName: string)
 export function getMsigVotesScope(proposer: string, proposalName: string): bigint {
     const proposerValue = BigInt(Name.from(proposer).value.value)
     const proposalValue = BigInt(Name.from(proposalName).value.value)
-    // Combine into uint128: (proposer << 64) | proposal
     const combined = (proposerValue << 64n) | proposalValue
-    // XOR upper and lower 64 bits to get uint64 scope
     const upper = combined >> 64n
     const lower = combined & 0xffffffffffffffffn
     return upper ^ lower

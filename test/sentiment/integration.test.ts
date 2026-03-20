@@ -1,7 +1,7 @@
 import {beforeEach, describe, expect, test} from 'bun:test'
 import {Name} from '@wharfkit/antelope'
 
-import {contracts, resetContracts, sentimentContract} from './setup'
+import {contracts, createTopic, resetContracts, sentimentContract} from './setup'
 
 describe('contract: sentiment - Integration Tests', () => {
     beforeEach(async () => {
@@ -10,12 +10,8 @@ describe('contract: sentiment - Integration Tests', () => {
 
     describe('integration: voting lifecycle', () => {
         test('full voting lifecycle', async () => {
-            // Create topic
-            await contracts.sentiment.actions
-                .createtopic(['debate', 'Should we implement feature X?'])
-                .send(sentimentContract)
+            await createTopic('alice', 'debate', 'Should we implement feature X?')
 
-            // Multiple users vote
             await contracts.sentiment.actions.vote(['alice', 'debate', 1]).send('alice')
             await contracts.sentiment.actions.vote(['bob', 'debate', 1]).send('bob')
             await contracts.sentiment.actions.vote(['charlie', 'debate', 0]).send('charlie')
@@ -29,7 +25,6 @@ describe('contract: sentiment - Integration Tests', () => {
             expect(support).toHaveLength(2)
             expect(opposition).toHaveLength(1)
 
-            // One user changes their mind
             await contracts.sentiment.actions.changevote(['bob', 'debate', 0]).send('bob')
 
             debateVotes = await contracts.sentiment.tables
@@ -40,7 +35,6 @@ describe('contract: sentiment - Integration Tests', () => {
             expect(support).toHaveLength(1)
             expect(opposition).toHaveLength(2)
 
-            // One user removes their vote
             await contracts.sentiment.actions.rmtopicvote(['charlie', 'debate']).send('charlie')
 
             debateVotes = await contracts.sentiment.tables
@@ -54,9 +48,7 @@ describe('contract: sentiment - Integration Tests', () => {
         })
 
         test('deleting topic removes all votes', async () => {
-            await contracts.sentiment.actions
-                .createtopic(['testtopic', 'Test topic'])
-                .send(sentimentContract)
+            await createTopic('alice', 'testtopic', 'Test topic')
 
             await contracts.sentiment.actions.vote(['alice', 'testtopic', 1]).send('alice')
             await contracts.sentiment.actions.vote(['bob', 'testtopic', 0]).send('bob')
