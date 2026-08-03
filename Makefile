@@ -5,9 +5,9 @@ SHELL := /bin/bash
 
 build: build/production
 
-build/debug: build/api/debug build/create/debug build/mockreceiver/debug build/registry/debug build/sentiment/debug build/tokens/debug
+build/debug: build/api/debug build/create/debug build/gift/debug build/mocksystem/debug build/mockreceiver/debug build/registry/debug build/sentiment/debug build/tokens/debug
 
-build/production: build/api/production build/create/production build/registry/production build/sentiment/production build/tokens/production
+build/production: build/api/production build/create/production build/gift/production build/registry/production build/sentiment/production build/tokens/production
 
 build/api:
 	make -C contracts/api build
@@ -24,8 +24,23 @@ build/create/debug:
 build/create/production:
 	make -C contracts/create build/production
 
+build/gift:
+	make -C contracts/gift build
+
+build/gift/debug:
+	make -C contracts/gift build/debug
+
+build/gift/production:
+	make -C contracts/gift build/production
+
 build/api/production:
 	make -C contracts/api build/production
+
+build/mocksystem:
+	make -C contracts/mocksystem build
+
+build/mocksystem/debug:
+	make -C contracts/mocksystem build/debug
 
 build/mockreceiver:
 	make -C contracts/mockreceiver build
@@ -93,6 +108,10 @@ testnet/create:
 testnet/create/verify: node_modules
 	bun testnet/verify-create.ts
 
+.PHONY: testnet/gift
+testnet/gift:
+	make -C contracts/gift testnet
+
 .PHONY: testnet/mockreceiver
 testnet/mockreceiver:
 	make -C contracts/mockreceiver testnet
@@ -108,6 +127,10 @@ testnet/sentiment:
 .PHONY: testnet/tokens
 testnet/tokens:
 	make -C contracts/tokens testnet
+
+.PHONY: testnet/gift/demo
+testnet/gift/demo: codegen
+	bun run testnet/gift-demo.ts
 
 .PHONY: testnet/setup
 testnet/setup: codegen
@@ -127,6 +150,9 @@ test/api: build/api/debug node_modules codegen
 
 test/create: build/create/debug node_modules codegen
 	bun test -t "contract: create"
+
+test/gift: build/gift/debug node_modules codegen
+	bun test -t "contract: gift"
 
 test/mockreceiver: build/mockreceiver/debug node_modules codegen
 	bun test -t "contract: mockreceiver"
@@ -164,7 +190,7 @@ test: build/debug codegen node_modules
 # CODEGEN
 
 .PHONY: codegen
-codegen: ./codegen/api.ts ./codegen/mockreceiver.ts ./codegen/registry.ts ./codegen/sentiment.ts ./codegen/token.ts ./codegen/tokens.ts
+codegen: ./codegen/api.ts ./codegen/gift.ts ./codegen/mockreceiver.ts ./codegen/registry.ts ./codegen/sentiment.ts ./codegen/token.ts ./codegen/tokens.ts
 
 .PHONY: codegen/clean
 codegen/clean:
@@ -172,6 +198,9 @@ codegen/clean:
 
 ./codegen/api.ts:
 	${BIN}/wharfkit generate --json ./contracts/api/build/api.abi --file ./codegen/api.ts api
+
+./codegen/gift.ts:
+	${BIN}/wharfkit generate --json ./contracts/gift/build/gift.abi --file ./codegen/gift.ts gift
 
 ./codegen/mockreceiver.ts:
 	${BIN}/wharfkit generate --json ./contracts/mockreceiver/build/mockreceiver.abi --file ./codegen/mockreceiver.ts mockreceiver
