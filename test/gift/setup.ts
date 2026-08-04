@@ -1,7 +1,7 @@
 import {Name, PermissionLevel, Serializer, Transaction} from '@wharfkit/antelope'
 import {blockchain} from '../helpers'
 
-export const giftContract = 'gift.vaulta'
+export const giftContract = 'ram.vaulta'
 export const alice = 'alice'
 export const bob = 'bob'
 export const newuser = 'newuser'
