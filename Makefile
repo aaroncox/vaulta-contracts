@@ -196,23 +196,26 @@ codegen: ./codegen/api.ts ./codegen/gift.ts ./codegen/mockreceiver.ts ./codegen/
 codegen/clean:
 	rm -rf ./codegen/*.ts
 
-./codegen/api.ts:
+./codegen/api.ts: ./contracts/api/build/api.abi
 	${BIN}/wharfkit generate --json ./contracts/api/build/api.abi --file ./codegen/api.ts api
 
-./codegen/gift.ts:
+./codegen/gift.ts: ./contracts/gift/build/gift.abi
 	${BIN}/wharfkit generate --json ./contracts/gift/build/gift.abi --file ./codegen/gift.ts gift
 
-./codegen/mockreceiver.ts:
+./codegen/mockreceiver.ts: ./contracts/mockreceiver/build/mockreceiver.abi
 	${BIN}/wharfkit generate --json ./contracts/mockreceiver/build/mockreceiver.abi --file ./codegen/mockreceiver.ts mockreceiver
 
-./codegen/registry.ts:
+./codegen/registry.ts: ./contracts/registry/build/registry.abi
 	${BIN}/wharfkit generate --json ./contracts/registry/build/registry.abi --file ./codegen/registry.ts registry
 
-./codegen/sentiment.ts:
+./codegen/sentiment.ts: ./contracts/sentiment/build/sentiment.abi
 	${BIN}/wharfkit generate --json ./contracts/sentiment/build/sentiment.abi --file ./codegen/sentiment.ts sentiment
 
-./codegen/token.ts:
+./codegen/token.ts: ./shared/include/eosio.token/eosio.token.abi
 	${BIN}/wharfkit generate --json ./shared/include/eosio.token/eosio.token.abi --file ./codegen/token.ts token
 
-./codegen/tokens.ts:
+./codegen/tokens.ts: ./contracts/tokens/build/tokens.abi
 	${BIN}/wharfkit generate --json ./contracts/tokens/build/tokens.abi --file ./codegen/tokens.ts tokens
+
+./contracts/%.abi:
+	make -C contracts/$(firstword $(subst /, ,$*)) build/debug
