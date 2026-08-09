@@ -5,7 +5,7 @@ import {
     alice,
     bob,
     contracts,
-    getOperator,
+    getCreator,
     giftContract,
     giftInTx,
     newuser,
@@ -21,7 +21,7 @@ function getGiftedRam(account: string) {
 describe('contract: gift - ungiftram', () => {
     beforeEach(async () => {
         await resetContracts()
-        await contracts.gift.actions.addoper([alice, 10000]).send()
+        await contracts.gift.actions.addcreator([alice, 10000]).send()
         await giftInTx(alice, newuser, 4000, 'welcome')
     })
 
@@ -48,8 +48,8 @@ describe('contract: gift - ungiftram', () => {
         ).rejects.toThrow(`${bob} does not hold any gifted RAM`)
     })
 
-    test('does not credit the operator quota back on return (spend-rate limit, not a balance)', async () => {
+    test('does not credit the creator quota back on return (spend-rate limit, not a balance)', async () => {
         await contracts.system.actions.ungiftram([newuser, giftContract, '']).send(newuser)
-        expect(Number(getOperator(alice).used_bytes)).toBe(4136)
+        expect(Number(getCreator(alice).used_bytes)).toBe(4136)
     })
 })

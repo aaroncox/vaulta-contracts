@@ -25,49 +25,49 @@ static bool created_in_transaction(name account)
    return false;
 }
 
-void gift::addoper(name account, int64_t daily_quota_bytes)
+void gift::addcreator(name creator, int64_t daily_quota_bytes)
 {
    require_auth(get_self());
-   check(is_account(account), "operator account does not exist");
+   check(is_account(creator), "creator account does not exist");
    check(daily_quota_bytes > 0, "quota must be positive");
 
-   operators_table operators(get_self(), get_self().value);
-   check(operators.find(account.value) == operators.end(), "operator already registered");
+   creators_table creators(get_self(), get_self().value);
+   check(creators.find(creator.value) == creators.end(), "creator already registered");
 
-   operators.emplace(get_self(), [&](auto& row) {
-      row.account           = account;
+   creators.emplace(get_self(), [&](auto& row) {
+      row.creator           = creator;
       row.daily_quota_bytes = daily_quota_bytes;
       row.used_bytes        = 0;
       row.window_start      = time_point_sec(current_time_point());
    });
 }
 
-void gift::rmoper(name account)
+void gift::rmcreator(name creator)
 {
    require_auth(get_self());
-   operators_table operators(get_self(), get_self().value);
-   auto            itr = operators.require_find(account.value, "operator not registered");
-   operators.erase(itr);
+   creators_table creators(get_self(), get_self().value);
+   auto           itr = creators.require_find(creator.value, "creator not registered");
+   creators.erase(itr);
 }
 
-void gift::setquota(name account, int64_t daily_quota_bytes)
+void gift::setquota(name creator, int64_t daily_quota_bytes)
 {
    require_auth(get_self());
    check(daily_quota_bytes > 0, "quota must be positive");
-   operators_table operators(get_self(), get_self().value);
-   auto            itr = operators.require_find(account.value, "operator not registered");
-   operators.modify(itr, same_payer, [&](auto& row) { row.daily_quota_bytes = daily_quota_bytes; });
+   creators_table creators(get_self(), get_self().value);
+   auto           itr = creators.require_find(creator.value, "creator not registered");
+   creators.modify(itr, same_payer, [&](auto& row) { row.daily_quota_bytes = daily_quota_bytes; });
 }
 
-void gift::giftacct(name op, name to, int64_t bytes, string memo)
+void gift::giftacct(name creator, name account, int64_t bytes, string memo)
 {
-   require_auth(op);
+   require_auth(creator);
    check(bytes > 0, "must gift positive bytes");
-   check(is_account(to), "to account does not exist");
+   check(is_account(account), "account does not exist");
    check(memo.size() <= 256, "memo has more than 256 bytes");
 
-   operators_table operators(get_self(), get_self().value);
-   auto            itr = operators.require_find(op.value, "operator not registered");
+   creators_table creators(get_self(), get_self().value);
+   auto           itr = creators.require_find(creator.value, "creator not registered");
 
    auto           now          = time_point_sec(current_time_point());
    int64_t        used         = itr->used_bytes;
@@ -79,15 +79,15 @@ void gift::giftacct(name op, name to, int64_t bytes, string memo)
    int64_t remaining = itr->daily_quota_bytes - used;
    check(remaining >= GIFT_ROW_OVERHEAD && bytes <= remaining - GIFT_ROW_OVERHEAD, "daily quota exceeded");
 
-   check(created_in_transaction(to), "to must be created by eosio::newaccount in the same transaction");
+   check(created_in_transaction(account), "account must be created by eosio::newaccount in the same transaction");
 
-   operators.modify(itr, same_payer, [&](auto& row) {
+   creators.modify(itr, same_payer, [&](auto& row) {
       row.used_bytes   = used + bytes + GIFT_ROW_OVERHEAD;
       row.window_start = window_start;
    });
 
    eosiosystem::system_contract::giftram_action giftram{SYSTEM_CONTRACT, {{get_self(), "active"_n}}};
-   giftram.send(get_self(), to, bytes, memo);
+   giftram.send(get_self(), account, bytes, memo);
 }
 
 } // namespace vaultacontracts

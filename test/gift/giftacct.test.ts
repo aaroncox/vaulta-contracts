@@ -6,7 +6,7 @@ import {
     alice,
     bob,
     contracts,
-    getOperator,
+    getCreator,
     giftContract,
     giftInTx,
     newuser,
@@ -24,7 +24,7 @@ function getGiftedRam(account: string) {
 describe('contract: gift - giftacct', () => {
     beforeEach(async () => {
         await resetContracts()
-        await contracts.gift.actions.addoper([alice, 10000]).send()
+        await contracts.gift.actions.addcreator([alice, 10000]).send()
     })
 
     test('gifts RAM via inline eosio::giftram when the transaction creates the account', async () => {
@@ -33,7 +33,7 @@ describe('contract: gift - giftacct', () => {
         expect(row).toBeDefined()
         expect(row.gifter).toBe(giftContract)
         expect(Number(row.ram_bytes)).toBe(4000)
-        expect(Number(getOperator(alice).used_bytes)).toBe(4136)
+        expect(Number(getCreator(alice).used_bytes)).toBe(4136)
     })
 
     test('rejects a gift without a same-transaction newaccount', async () => {
@@ -49,23 +49,23 @@ describe('contract: gift - giftacct', () => {
                 packAction(
                     contracts.gift,
                     'giftacct',
-                    {op: alice, to: newuser, bytes: 4000, memo: ''},
+                    {creator: alice, account: newuser, bytes: 4000, memo: ''},
                     alice
                 )
             )
         ).rejects.toThrow('must be created by eosio::newaccount in the same transaction')
     })
 
-    test('requires the operator authority', async () => {
+    test('requires the creator authority', async () => {
         await expect(
             contracts.gift.actions.giftacct([alice, newuser, 4000, '']).send(bob)
         ).rejects.toThrow('missing required authority')
     })
 
-    test('rejects an unregistered operator', async () => {
+    test('rejects an unregistered creator', async () => {
         await expect(
             contracts.gift.actions.giftacct([bob, newuser, 4000, '']).send(bob)
-        ).rejects.toThrow('operator not registered')
+        ).rejects.toThrow('creator not registered')
     })
 
     test('rejects non-positive bytes', async () => {
@@ -88,15 +88,15 @@ describe('contract: gift - giftacct', () => {
 
     test('debits the giftedram row overhead against the quota', async () => {
         await giftInTx(alice, newuser, 4000)
-        expect(Number(getOperator(alice).used_bytes)).toBe(4136)
+        expect(Number(getCreator(alice).used_bytes)).toBe(4136)
         await giftInTx(alice, newuser, 5728)
-        expect(Number(getOperator(alice).used_bytes)).toBe(10000)
+        expect(Number(getCreator(alice).used_bytes)).toBe(10000)
         await expect(giftInTx(alice, newuser, 1)).rejects.toThrow('daily quota exceeded')
     })
 
     test('accepts a gift that exactly fills the quota including overhead', async () => {
         await giftInTx(alice, newuser, 9864)
-        expect(Number(getOperator(alice).used_bytes)).toBe(10000)
+        expect(Number(getCreator(alice).used_bytes)).toBe(10000)
     })
 
     test('rejects a single gift that exceeds the quota minus overhead', async () => {
@@ -114,14 +114,14 @@ describe('contract: gift - giftacct', () => {
         await giftInTx(alice, newuser, 9864)
         advanceTime(86401)
         await giftInTx(alice, newuser, 4000)
-        expect(Number(getOperator(alice).used_bytes)).toBe(4136)
+        expect(Number(getCreator(alice).used_bytes)).toBe(4136)
     })
 
     test('resets the window at exactly 24 hours', async () => {
         await giftInTx(alice, newuser, 9864)
         advanceTime(86400)
         await giftInTx(alice, newuser, 4000)
-        expect(Number(getOperator(alice).used_bytes)).toBe(4136)
+        expect(Number(getCreator(alice).used_bytes)).toBe(4136)
     })
 
     test('does not reset the window before 24 hours', async () => {

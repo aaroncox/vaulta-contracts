@@ -16,9 +16,9 @@ export async function resetContracts() {
     blockchain.createAccounts(alice, bob, newuser)
 }
 
-export function getOperator(account: string) {
+export function getCreator(account: string) {
     return contracts.gift.tables
-        .operators(Name.from(giftContract).value.value)
+        .creators(Name.from(giftContract).value.value)
         .getTableRow(Name.from(account).value.value)
 }
 
@@ -39,9 +39,9 @@ export function sendActions(...actions: ReturnType<typeof packAction>[]) {
     )
 }
 
-export function giftInTx(op: string, to: string, bytes: number | string, memo = '') {
+export function giftInTx(creator: string, account: string, bytes: number | string, memo = '') {
     return sendActions(
-        packAction(contracts.system, 'newaccount', {creator: op, account: to}, op),
-        packAction(contracts.gift, 'giftacct', {op, to, bytes, memo}, op)
+        packAction(contracts.system, 'newaccount', {creator, account}, creator),
+        packAction(contracts.gift, 'giftacct', {creator, account, bytes, memo}, creator)
     )
 }
