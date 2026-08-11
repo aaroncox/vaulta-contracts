@@ -68,6 +68,10 @@ clean:
 	rm ./codegen/*.ts
 
 # MAINNET
+.PHONY: mainnet/create
+mainnet/create:
+	make -C contracts/create mainnet
+
 .PHONY: mainnet/sentiment
 mainnet/sentiment:
 	make -C contracts/sentiment mainnet

@@ -24,3 +24,8 @@ clean:
 testnet: build/debug
 	cleos -u $(TESTNET_NODE_URL) set contract $(CREATE_TESTNET_ACCOUNT) \
 		build/ ${CREATE_CONTRACT_NAME}.wasm ${CREATE_CONTRACT_NAME}.abi
+
+mainnet: build/production
+	@echo "Deploying ${CREATE_CONTRACT_NAME} to $(CREATE_MAINNET_ACCOUNT) on $(MAINNET_NODE_URL)"
+	cleos -u $(MAINNET_NODE_URL) set contract $(CREATE_MAINNET_ACCOUNT) \
+		build/ ${CREATE_CONTRACT_NAME}.wasm ${CREATE_CONTRACT_NAME}.abi
