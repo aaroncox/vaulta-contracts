@@ -28,7 +28,7 @@ public:
    static constexpr name   PAYMENT_TOKEN_CONTRACT = "core.vaulta"_n;
    static constexpr symbol SYSTEM_RAM             = symbol("RAMCORE", 4);
 
-   [[eosio::on_notify("core.vaulta::transfer")]] void ontransfer(name from, name to, asset quantity, string memo);
+   [[eosio::on_notify("*::transfer")]] void ontransfer(name from, name to, asset quantity, string memo);
    using ontransfer_action = eosio::action_wrapper<"transfer"_n, &create::ontransfer>;
 
    [[eosio::action, eosio::read_only]] pair<name, eosiosystem::authority> parsememo(string memo);

@@ -27,7 +27,7 @@ pair<name, eosiosystem::authority> create::parsememo(string memo)
    return make_pair(account, auth);
 }
 
-[[eosio::on_notify("core.vaulta::transfer")]]
+[[eosio::on_notify("*::transfer")]]
 void create::ontransfer(name from, name to, asset quantity, string memo)
 {
    // ignore RAM sales
