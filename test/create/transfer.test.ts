@@ -7,6 +7,7 @@ import {
     createContract,
     legacyTokenSymbol,
     resetContracts,
+    systemTokenContract,
     validMemo,
 } from './setup'
 
@@ -51,6 +52,17 @@ describe('contract: create - Transfer Handling', () => {
                     .transfer([alice, createContract, '1.0000 A', 'invalidmemo'])
                     .send(alice)
             ).rejects.toThrow('eosio_assert: Invalid memo format')
+        })
+    })
+
+    describe('system token unwrap leg', () => {
+        test('accepts the eosio.token EOS leg core.vaulta sends back during buyram', async () => {
+            await contracts.legacytoken.actions
+                .transfer([systemTokenContract, createContract, '1.0790 EOS', ''])
+                .send(systemTokenContract)
+
+            const balance = getBalance('legacytoken', createContract, legacyTokenSymbol)
+            expect(String(balance)).toBe('1.0790 EOS')
         })
     })
 

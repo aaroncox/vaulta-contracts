@@ -31,8 +31,9 @@ pair<name, eosiosystem::authority> create::parsememo(string memo)
 void create::ontransfer(name from, name to, asset quantity, string memo)
 {
    // ignore RAM sales
+   // ignore the EOS leg core.vaulta sends back to this contract while unwrapping A during buyram
    // ignore transfers not sent to this contract
-   if (from == "eosio.ram"_n || to != get_self()) {
+   if (from == "eosio.ram"_n || from == SYSTEM_CONTRACT_PROXY || to != get_self()) {
       return;
    }
 

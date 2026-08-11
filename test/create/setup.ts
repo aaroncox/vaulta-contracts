@@ -47,4 +47,8 @@ export async function resetContracts() {
     await setupToken('token', systemTokenContract, systemTokenSymbol)
     await setupToken('legacytoken', legacyTokenContract, legacyTokenSymbol)
     await setupToken('faketoken', faketokenContract, systemTokenSymbol)
+
+    await contracts.legacytoken.actions
+        .transfer([legacyTokenContract, systemTokenContract, '100.0000 EOS', ''])
+        .send(legacyTokenContract)
 }
