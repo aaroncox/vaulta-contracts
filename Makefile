@@ -5,9 +5,9 @@ SHELL := /bin/bash
 
 build: build/production
 
-build/debug: build/api/debug build/mockreceiver/debug build/registry/debug build/sentiment/debug build/tokens/debug
+build/debug: build/api/debug build/create/debug build/mockreceiver/debug build/registry/debug build/sentiment/debug build/tokens/debug
 
-build/production: build/api/production build/registry/production build/sentiment/production build/tokens/production
+build/production: build/api/production build/create/production build/registry/production build/sentiment/production build/tokens/production
 
 build/api:
 	make -C contracts/api build
@@ -20,6 +20,9 @@ build/create:
 
 build/create/debug:
 	make -C contracts/create build/debug
+
+build/create/production:
+	make -C contracts/create build/production
 
 build/api/production:
 	make -C contracts/api build/production
@@ -113,6 +116,9 @@ testnet/reset: codegen testnet/wipe testnet/setup
 
 test/api: build/api/debug node_modules codegen
 	bun test -t "contract: api"
+
+test/create: build/create/debug node_modules codegen
+	bun test -t "contract: create"
 
 test/mockreceiver: build/mockreceiver/debug node_modules codegen
 	bun test -t "contract: mockreceiver"
