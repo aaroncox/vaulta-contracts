@@ -26,6 +26,7 @@ testnet: build/debug
 		build/ ${CREATE_CONTRACT_NAME}.wasm ${CREATE_CONTRACT_NAME}.abi
 
 mainnet: build/production
+	@test -n "$(CREATE_MAINNET_ACCOUNT)" || { echo "CREATE_MAINNET_ACCOUNT is not set in .env"; exit 1; }
 	@echo "Deploying ${CREATE_CONTRACT_NAME} to $(CREATE_MAINNET_ACCOUNT) on $(MAINNET_NODE_URL)"
 	cleos -u $(MAINNET_NODE_URL) set contract $(CREATE_MAINNET_ACCOUNT) \
 		build/ ${CREATE_CONTRACT_NAME}.wasm ${CREATE_CONTRACT_NAME}.abi
