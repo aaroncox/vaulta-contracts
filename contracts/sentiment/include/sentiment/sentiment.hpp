@@ -34,12 +34,22 @@ public:
       name                       action = "transfer"_n;
    };
 
+   struct metrics_config
+   {
+      antelope::token_definition system_token     = {{}, "core.vaulta"_n, symbol("A", 4)};
+      antelope::token_definition legacy_token     = {{}, "eosio.token"_n, symbol("EOS", 4)};
+      antelope::token_definition wram_token       = {{}, "eosio.wram"_n, symbol("WRAM", 0)};
+      antelope::token_definition v_token          = {{}, "token.rms"_n, symbol("V", 0)};
+      name                       v_stake_contract = "stake.rms"_n;
+   };
+
    /** Table Definitions */
    struct [[eosio::table("config")]] config_row
    {
-      bool        enabled         = false;
-      name        system_contract = "eosio"_n;
-      fees_config fees;
+      bool           enabled         = false;
+      name           system_contract = "eosio"_n;
+      fees_config    fees;
+      metrics_config metrics;
    };
    typedef eosio::singleton<"config"_n, config_row> config_table;
 
@@ -117,6 +127,16 @@ public:
       int64_t weight;
    };
 
+   struct get_voter_metrics_response
+   {
+      name    voter;
+      int64_t system_staked; // own delband + REX revalued live, token units (4 dp)
+      int64_t system_liquid; // A + EOS summed, token units (4 dp)
+      int64_t ram_bytes;     // userres.ram_bytes + WRAM, bytes
+      int64_t v_staked;      // stake.amount + unstaking_amount, whole V
+      int64_t v_liquid;      // token.rms balance, whole V
+   };
+
    struct get_account_vote_response
    {
       name    voter;
@@ -142,6 +162,12 @@ public:
    [[eosio::action]] void setconfig(const name& system_contract, const name& token_contract, const name& token_action,
                                     const symbol& token_symbol, const name& fee_receiver, const asset& createtopic_fee);
    using setconfig_action = eosio::action_wrapper<"setconfig"_n, &sentiment::setconfig>;
+
+   [[eosio::action]] void setmetriccfg(const metrics_config& metrics);
+   using setmetriccfg_action = eosio::action_wrapper<"setmetriccfg"_n, &sentiment::setmetriccfg>;
+
+   [[eosio::action]] void migrate();
+   using migrate_action = eosio::action_wrapper<"migrate"_n, &sentiment::migrate>;
 
    /** Topic Management */
    [[eosio::action]] void createtopic(const name& creator, const name& id, const string& description, const asset& payment);
@@ -236,11 +262,19 @@ public:
                                                                                   const name& proposal_name);
    using getmsigvtrs_action = eosio::action_wrapper<"getmsigvtrs"_n, &sentiment::getmsigvtrs>;
 
+   // DEPRECATED: Use getmetric()/getmetrics() instead.
    [[eosio::action, eosio::read_only]] get_voter_weight_response getweight(const name& voter);
    using getweight_action = eosio::action_wrapper<"getweight"_n, &sentiment::getweight>;
 
+   // DEPRECATED: Use getmetric()/getmetrics() instead.
    [[eosio::action, eosio::read_only]] vector<get_voter_weight_response> getweights(const vector<name>& voters);
    using getweights_action = eosio::action_wrapper<"getweights"_n, &sentiment::getweights>;
+
+   [[eosio::action, eosio::read_only]] get_voter_metrics_response getmetric(const name& voter);
+   using getmetric_action = eosio::action_wrapper<"getmetric"_n, &sentiment::getmetric>;
+
+   [[eosio::action, eosio::read_only]] vector<get_voter_metrics_response> getmetrics(const vector<name>& voters);
+   using getmetrics_action = eosio::action_wrapper<"getmetrics"_n, &sentiment::getmetrics>;
 
 #ifdef DEBUG
    [[eosio::action]] void reset();
@@ -250,6 +284,14 @@ private:
    config_row get_config();
    void       require_enabled(const config_row& config) { check(config.enabled, "contract is disabled"); }
    get_voter_weight_response get_voter_weight(const config_row& config, const name& voter);
+
+   struct rex_pool_state
+   {
+      int64_t total_lendable = 0;
+      int64_t total_rex      = 0;
+   };
+   rex_pool_state             get_rex_pool(const config_row& config);
+   get_voter_metrics_response get_voter_metrics(const config_row& config, const rex_pool_state& pool, const name& voter);
 
    void  add_balance(const name& account, const asset& quantity);
    asset get_balance(const name& account, const symbol& token_symbol);
