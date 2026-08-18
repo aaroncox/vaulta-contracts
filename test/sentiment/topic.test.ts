@@ -76,7 +76,9 @@ describe('contract: sentiment - Topic Management', () => {
                     contracts.sentiment.actions
                         .createtopic([alice, 'testtopic', 'Test description', String(topicFee)])
                         .send(alice)
-                ).rejects.toThrow('eosio_assert: insufficient contract balance to pay topic creation fee')
+                ).rejects.toThrow(
+                    'eosio_assert: insufficient contract balance to pay topic creation fee'
+                )
             })
 
             test('incorrect payment amount', async () => {

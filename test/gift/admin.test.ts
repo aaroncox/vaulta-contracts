@@ -16,9 +16,9 @@ describe('contract: gift - creator admin', () => {
     })
 
     test('addcreator rejects a nonexistent account', async () => {
-        await expect(contracts.gift.actions.addcreator(['missing', 1000000]).send()).rejects.toThrow(
-            'creator account does not exist'
-        )
+        await expect(
+            contracts.gift.actions.addcreator(['missing', 1000000]).send()
+        ).rejects.toThrow('creator account does not exist')
     })
 
     test('addcreator rejects a duplicate creator', async () => {
@@ -35,9 +35,9 @@ describe('contract: gift - creator admin', () => {
     })
 
     test('addcreator requires the contract authority', async () => {
-        await expect(contracts.gift.actions.addcreator([alice, 1000000]).send(alice)).rejects.toThrow(
-            'missing required authority'
-        )
+        await expect(
+            contracts.gift.actions.addcreator([alice, 1000000]).send(alice)
+        ).rejects.toThrow('missing required authority')
     })
 
     test('setquota updates the quota', async () => {

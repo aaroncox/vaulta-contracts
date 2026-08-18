@@ -1,6 +1,12 @@
 import {beforeEach, describe, expect, test} from 'bun:test'
 
-import {contracts, createTopic, defaultSetconfigArgs, resetContracts, sentimentContract} from './setup'
+import {
+    contracts,
+    createTopic,
+    defaultSetconfigArgs,
+    resetContracts,
+    sentimentContract,
+} from './setup'
 
 describe('contract: sentiment - Configuration', () => {
     beforeEach(async () => {
@@ -86,9 +92,7 @@ describe('contract: sentiment - Configuration', () => {
 
         test('non-owner cannot set config', async () => {
             await expect(
-                contracts.sentiment.actions
-                    .setconfig(defaultSetconfigArgs)
-                    .send('alice')
+                contracts.sentiment.actions.setconfig(defaultSetconfigArgs).send('alice')
             ).rejects.toThrow('missing required authority')
         })
     })

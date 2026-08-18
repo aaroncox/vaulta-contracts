@@ -4,14 +4,12 @@ import {Asset, Name} from '@wharfkit/antelope'
 import {
     alice,
     bob,
-    charlie,
     contracts,
-    defaultInitialBalance,
     defaultTokenSymbol,
     depositTokens,
     feeReceiver,
-    sentimentContract,
     resetContracts,
+    sentimentContract,
     topicFee,
 } from './setup'
 
@@ -61,7 +59,9 @@ describe('contract: sentiment - Balance Management', () => {
                 await depositTokens(alice, '5.0000 A')
                 const after = getTokenBalance(alice)
 
-                const expected = before.units.subtracting(Asset.fromFloat(5, defaultTokenSymbol).units)
+                const expected = before.units.subtracting(
+                    Asset.fromFloat(5, defaultTokenSymbol).units
+                )
                 expect(after.units.equals(expected)).toBeTrue()
             })
         })
@@ -81,9 +81,7 @@ describe('contract: sentiment - Balance Management', () => {
                 const supply = Asset.fromFloat(1000000000, '4,B')
                 await contracts.token.actions.create([tokenName, String(supply)]).send()
                 await contracts.token.actions.issue([tokenName, String(supply), '']).send()
-                await contracts.token.actions
-                    .transfer([tokenName, alice, '100.0000 B', ''])
-                    .send()
+                await contracts.token.actions.transfer([tokenName, alice, '100.0000 B', '']).send()
 
                 await expect(
                     contracts.token.actions
@@ -221,7 +219,9 @@ describe('contract: sentiment - Balance Management', () => {
                 contracts.sentiment.actions
                     .createtopic([alice, 'testtopic', 'Test', String(topicFee)])
                     .send(alice)
-            ).rejects.toThrow('eosio_assert: insufficient contract balance to pay topic creation fee')
+            ).rejects.toThrow(
+                'eosio_assert: insufficient contract balance to pay topic creation fee'
+            )
         })
 
         test('cannot spend another users deposit via createtopic', async () => {
@@ -231,7 +231,9 @@ describe('contract: sentiment - Balance Management', () => {
                 contracts.sentiment.actions
                     .createtopic([bob, 'testtopic', 'Test', String(topicFee)])
                     .send(bob)
-            ).rejects.toThrow('eosio_assert: insufficient contract balance to pay topic creation fee')
+            ).rejects.toThrow(
+                'eosio_assert: insufficient contract balance to pay topic creation fee'
+            )
         })
 
         test('balance isolation between accounts', async () => {
