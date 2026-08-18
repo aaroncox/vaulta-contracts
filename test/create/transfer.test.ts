@@ -135,8 +135,9 @@ describe('contract: create - Transfer Handling', () => {
         })
 
         test('accepts WA keys across user presence values and rpid lengths', async () => {
+            // empty rpid excluded: nodeos rejects it at key deserialization (vert does not)
             for (const presence of [0, 1, 2]) {
-                for (const rpid of ['', 'example.com', longRpid]) {
+                for (const rpid of ['example.com', longRpid]) {
                     const key = makeWaKey(presence, rpid)
                     expect(String(PublicKey.from(key))).toBe(key)
                     expect(await parseKey(key)).toBe(key)

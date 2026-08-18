@@ -5,6 +5,7 @@ declare global {
             TESTNET_TEST_ACCOUNT: string
             TESTNET_PRIVATE_KEY: string
             TESTNET_SYSTEMTOKEN_ACCOUNT: string
+            CREATE_TESTNET_ACCOUNT: string
             API_CONTRACT_NAME: string
             API_TESTNET_ACCOUNT: string
             MOCKRECEIVER_TESTNET_ACCOUNT: string

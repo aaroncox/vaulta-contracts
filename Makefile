@@ -89,6 +89,10 @@ testnet/api:
 testnet/create:
 	make -C contracts/create testnet
 
+.PHONY: testnet/create/verify
+testnet/create/verify: node_modules
+	bun testnet/verify-create.ts
+
 .PHONY: testnet/mockreceiver
 testnet/mockreceiver:
 	make -C contracts/mockreceiver testnet
