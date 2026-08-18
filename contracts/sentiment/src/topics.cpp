@@ -23,12 +23,10 @@ sentiment::createtopic(const name& creator, const name& id, const string& descri
 
    remove_balance(creator, payment);
 
-   action(
-      permission_level{get_self(), eosiosystem::system_contract::active_permission},
-      config.fees.token.contract,
-      config.fees.action,
-      std::make_tuple(get_self(), config.fees.receiver, payment, string("sentiment topic creation fee"))
-   ).send();
+   action(permission_level{get_self(), eosiosystem::system_contract::active_permission}, config.fees.token.contract,
+          config.fees.action,
+          std::make_tuple(get_self(), config.fees.receiver, payment, string("sentiment topic creation fee")))
+      .send();
 
    topics.emplace(creator, [&](auto& row) {
       row.id          = id;

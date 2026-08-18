@@ -65,7 +65,7 @@ public:
    {
       name   id;
       string description;
-      name creator;
+      name   creator;
 
       uint64_t primary_key() const { return id.value; }
    };
@@ -159,8 +159,12 @@ public:
    [[eosio::action]] void disable();
    using disable_action = eosio::action_wrapper<"disable"_n, &sentiment::disable>;
 
-   [[eosio::action]] void setconfig(const name& system_contract, const name& token_contract, const name& token_action,
-                                    const symbol& token_symbol, const name& fee_receiver, const asset& createtopic_fee);
+   [[eosio::action]] void setconfig(const name&   system_contract,
+                                    const name&   token_contract,
+                                    const name&   token_action,
+                                    const symbol& token_symbol,
+                                    const name&   fee_receiver,
+                                    const asset&  createtopic_fee);
    using setconfig_action = eosio::action_wrapper<"setconfig"_n, &sentiment::setconfig>;
 
    [[eosio::action]] void setmetriccfg(const metrics_config& metrics);
@@ -170,7 +174,8 @@ public:
    using migrate_action = eosio::action_wrapper<"migrate"_n, &sentiment::migrate>;
 
    /** Topic Management */
-   [[eosio::action]] void createtopic(const name& creator, const name& id, const string& description, const asset& payment);
+   [[eosio::action]] void
+   createtopic(const name& creator, const name& id, const string& description, const asset& payment);
    using createtopic_action = eosio::action_wrapper<"createtopic"_n, &sentiment::createtopic>;
 
    [[eosio::action]] void updatetopic(const name& id, const string& description);
@@ -290,8 +295,9 @@ private:
       int64_t total_lendable = 0;
       int64_t total_rex      = 0;
    };
-   rex_pool_state             get_rex_pool(const config_row& config);
-   get_voter_metrics_response get_voter_metrics(const config_row& config, const rex_pool_state& pool, const name& voter);
+   rex_pool_state get_rex_pool(const config_row& config);
+   get_voter_metrics_response
+   get_voter_metrics(const config_row& config, const rex_pool_state& pool, const name& voter);
 
    void  add_balance(const name& account, const asset& quantity);
    asset get_balance(const name& account, const symbol& token_symbol);

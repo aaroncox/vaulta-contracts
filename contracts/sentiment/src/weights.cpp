@@ -77,52 +77,52 @@ sentiment::get_voter_metrics(const config_row& config, const rex_pool_state& poo
 {
    check(is_account(voter), "voter account does not exist");
 
-   int64_t system_staked = 0;
+   int64_t                          system_staked = 0;
    eosiosystem::del_bandwidth_table delband(config.system_contract, voter.value);
-   auto d = delband.find(voter.value);
+   auto                             d = delband.find(voter.value);
    if (d != delband.end()) {
       system_staked += d->net_weight.amount + d->cpu_weight.amount;
    }
    eosiosystem::rex_balance_table rexbal(config.system_contract, config.system_contract.value);
-   auto r = rexbal.find(voter.value);
+   auto                           r = rexbal.find(voter.value);
    if (r != rexbal.end() && pool.total_rex > 0) {
       // live REX valuation, the system's own formula (rex.cpp update_rex_stake)
       system_staked += int64_t((int128_t(r->rex_balance.amount) * pool.total_lendable) / pool.total_rex);
    }
 
-   int64_t system_liquid = 0;
+   int64_t               system_liquid = 0;
    vaulta_accounts_table va(config.metrics.system_token.contract, voter.value);
-   auto a = va.find(config.metrics.system_token.symbol.code().raw());
+   auto                  a = va.find(config.metrics.system_token.symbol.code().raw());
    if (a != va.end()) {
       system_liquid += a->balance.amount;
    }
    token_accounts_table ea(config.metrics.legacy_token.contract, voter.value);
-   auto e = ea.find(config.metrics.legacy_token.symbol.code().raw());
+   auto                 e = ea.find(config.metrics.legacy_token.symbol.code().raw());
    if (e != ea.end()) {
       system_liquid += e->balance.amount;
    }
 
-   int64_t ram_bytes = 0;
+   int64_t                           ram_bytes = 0;
    eosiosystem::user_resources_table userres(config.system_contract, voter.value);
-   auto u = userres.find(voter.value);
+   auto                              u = userres.find(voter.value);
    if (u != userres.end()) {
       ram_bytes += u->ram_bytes;
    }
    token_accounts_table wa(config.metrics.wram_token.contract, voter.value);
-   auto w = wa.find(config.metrics.wram_token.symbol.code().raw());
+   auto                 w = wa.find(config.metrics.wram_token.symbol.code().raw());
    if (w != wa.end()) {
       ram_bytes += w->balance.amount;
    }
 
-   int64_t v_staked = 0;
+   int64_t         v_staked = 0;
    rms_stake_table stk(config.metrics.v_stake_contract, config.metrics.v_stake_contract.value);
-   auto s = stk.find(voter.value);
+   auto            s = stk.find(voter.value);
    if (s != stk.end()) {
       v_staked = int64_t(s->amount + s->unstaking_amount);
    }
-   int64_t v_liquid = 0;
+   int64_t              v_liquid = 0;
    token_accounts_table vt(config.metrics.v_token.contract, voter.value);
-   auto v = vt.find(config.metrics.v_token.symbol.code().raw());
+   auto                 v = vt.find(config.metrics.v_token.symbol.code().raw());
    if (v != vt.end()) {
       v_liquid = v->balance.amount;
    }
@@ -147,8 +147,8 @@ sentiment::get_voter_metrics(const config_row& config, const rex_pool_state& poo
 [[eosio::action, eosio::read_only]] vector<sentiment::get_voter_metrics_response>
 sentiment::getmetrics(const vector<name>& voters)
 {
-   auto config = get_config();
-   auto pool   = get_rex_pool(config);
+   auto                                          config = get_config();
+   auto                                          pool   = get_rex_pool(config);
    vector<sentiment::get_voter_metrics_response> results;
    for (const auto& voter : voters) {
       results.push_back(get_voter_metrics(config, pool, voter));

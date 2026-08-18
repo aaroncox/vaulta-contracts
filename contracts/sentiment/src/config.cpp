@@ -4,9 +4,9 @@ namespace vaultacontracts {
 
 struct legacy_config_row
 {
-   bool                       enabled         = false;
-   name                       system_contract = "eosio"_n;
-   sentiment::fees_config     fees;
+   bool                   enabled         = false;
+   name                   system_contract = "eosio"_n;
+   sentiment::fees_config fees;
    EOSLIB_SERIALIZE(legacy_config_row, (enabled)(system_contract)(fees))
 };
 
@@ -16,13 +16,16 @@ sentiment::config_row sentiment::get_config()
    return _config.get_or_default();
 }
 
-[[eosio::action]] void sentiment::setconfig(const name& system_contract, const name& token_contract,
-                                             const name& token_action, const symbol& token_symbol,
-                                             const name& fee_receiver, const asset& createtopic_fee)
+[[eosio::action]] void sentiment::setconfig(const name&   system_contract,
+                                            const name&   token_contract,
+                                            const name&   token_action,
+                                            const symbol& token_symbol,
+                                            const name&   fee_receiver,
+                                            const asset&  createtopic_fee)
 {
    require_auth(get_self());
    config_table _config(get_self(), get_self().value);
-   auto         config         = _config.get_or_default();
+   auto         config        = _config.get_or_default();
    config.system_contract     = system_contract;
    config.fees.token.contract = token_contract;
    config.fees.token.symbol   = token_symbol;
@@ -45,7 +48,7 @@ sentiment::config_row sentiment::get_config()
 {
    require_auth(get_self());
    const uint64_t table = "config"_n.value;
-   auto itr = internal_use_do_not_use::db_find_i64(get_self().value, get_self().value, table, table);
+   auto           itr   = internal_use_do_not_use::db_find_i64(get_self().value, get_self().value, table, table);
    check(itr >= 0, "no config row to migrate");
    auto              size = internal_use_do_not_use::db_get_i64(itr, nullptr, 0);
    std::vector<char> data(size);
