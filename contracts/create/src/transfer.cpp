@@ -74,7 +74,7 @@ void create::ontransfer(name from, name to, asset quantity, string memo)
    }
 
    logcreation_action logcreation{get_self(), {get_self(), "active"_n}};
-   logcreation.send(account, excess, cost, current_time_point().time_since_epoch().count());
+   logcreation.send(account, from, excess, cost, current_time_point().time_since_epoch().count());
 }
 
 [[eosio::action]] asset create::estimatecost()
@@ -82,7 +82,7 @@ void create::ontransfer(name from, name to, asset quantity, string memo)
    return antelope::ram_cost_with_fee(BYTES_FOR_CREATION, PAYMENT_TOKEN);
 }
 
-[[eosio::action, eosio::read_only]] void create::logcreation(name account, asset excess, asset ram, uint64_t timestamp)
+[[eosio::action, eosio::read_only]] void create::logcreation(name account, name from, asset excess, asset ram, uint64_t timestamp)
 {
    require_auth(_self);
 }
