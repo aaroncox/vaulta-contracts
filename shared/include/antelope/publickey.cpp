@@ -1,4 +1,6 @@
 #include "publickey.hpp"
+#include <cstring>
+#include <eosiolib/capi/eosio/crypto.h>
 #include <string_view>
 
 namespace antelope {
@@ -52,6 +54,16 @@ bool decode_base58(const string& str, vector<unsigned char>& vch)
    return DecodeBase58(str.c_str(), vch);
 }
 
+// C intrinsic, not eosio::ripemd160: checksum160's uint128 words need __ashlti3, unimplemented in vert
+static void verifyKeyChecksum(const vector<unsigned char>& vch, std::string_view suffix)
+{
+   vector<char> buf(vch.begin(), vch.end() - 4);
+   buf.insert(buf.end(), suffix.begin(), suffix.end());
+   capi_checksum160 digest;
+   ::ripemd160(buf.data(), buf.size(), &digest);
+   check(memcmp(digest.hash, vch.data() + vch.size() - 4, 4) == 0, "Invalid public key checksum");
+}
+
 eosio::public_key stringToLegacyPublicKey(string public_key_str)
 {
    string pubkey_prefix("EOS");
@@ -61,7 +73,8 @@ eosio::public_key stringToLegacyPublicKey(string public_key_str)
 
    vector<unsigned char> vch;
    check(decode_base58(base58substr, vch), "Decode pubkey failed");
-   check(vch.size() == 37, "Invalid public key");
+   check(vch.size() == 37, "Invalid public key length");
+   verifyKeyChecksum(vch, "");
 
    array<char, 33> pubkey_data;
    copy_n(vch.begin(), 33, pubkey_data.begin());
@@ -85,26 +98,29 @@ eosio::public_key stringToPublicKey(string public_key_str)
 
    vector<unsigned char> vch;
    check(decode_base58(string(key), vch), "Decode pubkey failed");
-   check(vch.size() >= 33, "Invalid public key size");
+   check(vch.size() >= 37, "Invalid public key length");
 
    array<char, 33> pubkey_data;
    copy_n(vch.begin(), 33, pubkey_data.begin());
 
    if (type == "WA") {
-      check(vch.size() >= 35, "Invalid WebAuthn public key size");
-
       eosio::webauthn_public_key::user_presence_t user_presence =
          static_cast<eosio::webauthn_public_key::user_presence_t>(vch[33]);
 
       uint8_t rpidLength = vch[34];
-      check(vch.size() >= 35 + rpidLength, "Invalid WebAuthn public key size");
+      check(vch.size() == 39u + rpidLength, "Invalid public key length");
+      verifyKeyChecksum(vch, "WA");
 
       string rpid(vch.begin() + 35, vch.begin() + 35 + rpidLength);
 
       return eosio::public_key(in_place_index<2>, eosio::webauthn_public_key{pubkey_data, user_presence, rpid});
    } else if (type == "R1") {
+      check(vch.size() == 37, "Invalid public key length");
+      verifyKeyChecksum(vch, "R1");
       return eosio::public_key(in_place_index<1>, pubkey_data);
    } else if (type == "K1") {
+      check(vch.size() == 37, "Invalid public key length");
+      verifyKeyChecksum(vch, "K1");
       return eosio::public_key(in_place_index<0>, pubkey_data);
    }
    check(false, "Unsupported key type");
