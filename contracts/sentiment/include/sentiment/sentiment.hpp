@@ -170,9 +170,6 @@ public:
    [[eosio::action]] void setmetriccfg(const metrics_config& metrics);
    using setmetriccfg_action = eosio::action_wrapper<"setmetriccfg"_n, &sentiment::setmetriccfg>;
 
-   [[eosio::action]] void migrate();
-   using migrate_action = eosio::action_wrapper<"migrate"_n, &sentiment::migrate>;
-
    /** Topic Management */
    [[eosio::action]] void
    createtopic(const name& creator, const name& id, const string& description, const asset& payment);
