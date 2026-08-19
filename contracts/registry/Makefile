@@ -1,19 +1,15 @@
 #!/bin/bash
 include ../../.env
-include ../cdt.mk
 SHELL := /bin/bash
 TEST_FILES := $(shell find src -name '*.ts')
 BIN := ./node_modules/.bin
 
 INCLUDES = -I include -I ../../shared/include
 
-build: check/cdt | build/dir
+build/debug: | build/dir
 	cdt-cpp -O=2 -abigen -abigen_output=build/${REGISTRY_CONTRACT_NAME}.abi -o build/${REGISTRY_CONTRACT_NAME}.wasm src/${REGISTRY_CONTRACT_NAME}.cpp -R src ${INCLUDES} -D DEBUG
 
-build/debug: check/cdt | build/dir
-	cdt-cpp -O=2 -abigen -abigen_output=build/${REGISTRY_CONTRACT_NAME}.abi -o build/${REGISTRY_CONTRACT_NAME}.wasm src/${REGISTRY_CONTRACT_NAME}.cpp -R src ${INCLUDES} -D DEBUG
-
-build/production: check/cdt | build/dir
+build/production: | build/dir
 	cdt-cpp -O=2 -abigen -abigen_output=build/${REGISTRY_CONTRACT_NAME}.abi -o build/${REGISTRY_CONTRACT_NAME}.wasm src/${REGISTRY_CONTRACT_NAME}.cpp -R src ${INCLUDES}
 
 build/dir:

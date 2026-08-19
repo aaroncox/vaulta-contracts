@@ -36,8 +36,11 @@ build/debug: docker/image
 build/production: docker/image
 	$(DOCKER_RUN) make native/build/production
 
-build/%: docker/image
-	$(DOCKER_RUN) make native/build/$*
+build/%/debug: docker/image
+	$(DOCKER_RUN) make native/build/$*/debug
+
+build/%/production: docker/image
+	$(DOCKER_RUN) make native/build/$*/production
 
 .PHONY: native/build/debug native/build/production
 native/build/debug: native/build/api/debug native/build/create/debug native/build/gift/debug native/build/mocksystem/debug native/build/mockreceiver/debug native/build/registry/debug native/build/sentiment/debug native/build/tokens/debug
@@ -49,9 +52,6 @@ native/build/%/debug:
 
 native/build/%/production:
 	make -C contracts/$* build/production
-
-native/build/%:
-	make -C contracts/$* build
 
 .PHONY: clean
 clean:
