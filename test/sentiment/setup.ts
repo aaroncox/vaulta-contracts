@@ -30,7 +30,11 @@ export const contracts = {
         true
     ),
     msig: blockchain.createContract(msigContract, `./shared/include/eosio.msig/eosio.msig`, true),
-    token: blockchain.createContract(tokenContract, './shared/include/eosio.token/eosio.token', true),
+    token: blockchain.createContract(
+        tokenContract,
+        './shared/include/eosio.token/eosio.token',
+        true
+    ),
     faketoken: blockchain.createContract(
         faketokenContract,
         './shared/include/eosio.token/eosio.token',
@@ -80,9 +84,7 @@ export async function openBalance(account: string) {
 
 export async function depositTokens(account: string, amount: string) {
     await openBalance(account)
-    await contracts.token.actions
-        .transfer([account, sentimentContract, amount, ''])
-        .send(account)
+    await contracts.token.actions.transfer([account, sentimentContract, amount, '']).send(account)
 }
 
 export async function createTopic(creator: string, id: string, description: string) {

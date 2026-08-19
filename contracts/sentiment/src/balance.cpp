@@ -42,7 +42,8 @@ void sentiment::remove_balance(const name& account, const asset& quantity)
 
    balance_table balances(get_self(), get_self().value);
    auto          balance_itr = balances.find(account.value);
-   if (balance_itr != balances.end()) return;
+   if (balance_itr != balances.end())
+      return;
 
    balances.emplace(account, [&](auto& b) {
       b.account = account;
@@ -64,7 +65,8 @@ sentiment::on_transfer(const name& from, const name& to, const asset& quantity, 
    auto config = get_config();
    require_enabled(config);
 
-   if (get_first_receiver() != config.fees.token.contract) return;
+   if (get_first_receiver() != config.fees.token.contract)
+      return;
    check(quantity.symbol == config.fees.token.symbol, "incorrect token symbol for deposit");
    check(quantity.amount > 0, "token quantity must be positive");
 

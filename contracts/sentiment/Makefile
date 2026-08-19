@@ -6,9 +6,6 @@ BIN := ./node_modules/.bin
 
 INCLUDES = -I include -I ../../shared/include
 
-build: | build/dir
-	cdt-cpp -O=2 -abigen -abigen_output=build/${SENTIMENT_CONTRACT_NAME}.abi -o build/${SENTIMENT_CONTRACT_NAME}.wasm src/${SENTIMENT_CONTRACT_NAME}.cpp -R src ${INCLUDES} -D DEBUG
-
 build/debug: | build/dir
 	cdt-cpp -O=2 -abigen -abigen_output=build/${SENTIMENT_CONTRACT_NAME}.abi -o build/${SENTIMENT_CONTRACT_NAME}.wasm src/${SENTIMENT_CONTRACT_NAME}.cpp -R src ${INCLUDES} -D DEBUG
 
@@ -21,10 +18,20 @@ build/dir:
 clean:
 	rm -rf build
 
-testnet: build/debug
+testnet:
+	@test -f build/${SENTIMENT_CONTRACT_NAME}.wasm -a -f build/${SENTIMENT_CONTRACT_NAME}.abi || { \
+		echo "No build artifacts in $(CURDIR)/build."; \
+		echo "Run 'make build/sentiment/debug' from the repository root first."; \
+		exit 1; \
+	}
 	cleos -u $(TESTNET_NODE_URL) set contract $(SENTIMENT_TESTNET_ACCOUNT) \
 		build/ ${SENTIMENT_CONTRACT_NAME}.wasm ${SENTIMENT_CONTRACT_NAME}.abi
 
-mainnet: build/debug
+mainnet:
+	@test -f build/${SENTIMENT_CONTRACT_NAME}.wasm -a -f build/${SENTIMENT_CONTRACT_NAME}.abi || { \
+		echo "No build artifacts in $(CURDIR)/build."; \
+		echo "Run 'make build/sentiment/debug' from the repository root first."; \
+		exit 1; \
+	}
 	cleos -u $(MAINNET_NODE_URL) set contract $(SENTIMENT_MAINNET_ACCOUNT) \
 		build/ ${SENTIMENT_CONTRACT_NAME}.wasm ${SENTIMENT_CONTRACT_NAME}.abi

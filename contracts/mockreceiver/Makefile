@@ -6,9 +6,6 @@ BIN := ./node_modules/.bin
 
 INCLUDES = -I include -I ../../shared/include -I ../tokens/include -I ../registry/include
 
-build: | build/dir
-	cdt-cpp -O=2 -abigen -abigen_output=build/${MOCKRECEIVER_CONTRACT_NAME}.abi -o build/${MOCKRECEIVER_CONTRACT_NAME}.wasm src/${MOCKRECEIVER_CONTRACT_NAME}.cpp -R src ${INCLUDES} -D DEBUG
-
 build/debug: | build/dir
 	cdt-cpp -O=2 -abigen -abigen_output=build/${MOCKRECEIVER_CONTRACT_NAME}.abi -o build/${MOCKRECEIVER_CONTRACT_NAME}.wasm src/${MOCKRECEIVER_CONTRACT_NAME}.cpp -R src ${INCLUDES} -D DEBUG
 
@@ -21,6 +18,11 @@ build/dir:
 clean:
 	rm -rf build
 
-testnet: build/debug
+testnet:
+	@test -f build/${MOCKRECEIVER_CONTRACT_NAME}.wasm -a -f build/${MOCKRECEIVER_CONTRACT_NAME}.abi || { \
+		echo "No build artifacts in $(CURDIR)/build."; \
+		echo "Run 'make build/mockreceiver/debug' from the repository root first."; \
+		exit 1; \
+	}
 	cleos -u $(TESTNET_NODE_URL) set contract $(MOCKRECEIVER_TESTNET_ACCOUNT) \
 		build/ ${MOCKRECEIVER_CONTRACT_NAME}.wasm ${MOCKRECEIVER_CONTRACT_NAME}.abi

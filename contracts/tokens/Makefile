@@ -6,9 +6,6 @@ BIN := ./node_modules/.bin
 
 INCLUDES = -I include -I ../../shared/include -I ../registry/include
 
-build: | build/dir
-	cdt-cpp -O=2 -abigen -abigen_output=build/${TOKENS_CONTRACT_NAME}.abi -o build/${TOKENS_CONTRACT_NAME}.wasm src/${TOKENS_CONTRACT_NAME}.cpp -R src ${INCLUDES} -D DEBUG
-
 build/debug: | build/dir
 	cdt-cpp -O=2 -abigen -abigen_output=build/${TOKENS_CONTRACT_NAME}.abi -o build/${TOKENS_CONTRACT_NAME}.wasm src/${TOKENS_CONTRACT_NAME}.cpp -R src ${INCLUDES} -D DEBUG
 
@@ -21,6 +18,11 @@ build/dir:
 clean:
 	rm -rf build
 
-testnet: build/debug
+testnet:
+	@test -f build/${TOKENS_CONTRACT_NAME}.wasm -a -f build/${TOKENS_CONTRACT_NAME}.abi || { \
+		echo "No build artifacts in $(CURDIR)/build."; \
+		echo "Run 'make build/tokens/debug' from the repository root first."; \
+		exit 1; \
+	}
 	cleos -u $(TESTNET_NODE_URL) set contract $(TOKENS_TESTNET_ACCOUNT) \
 		build/ ${TOKENS_CONTRACT_NAME}.wasm ${TOKENS_CONTRACT_NAME}.abi

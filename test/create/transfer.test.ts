@@ -129,9 +129,9 @@ describe('contract: create - Transfer Handling', () => {
 
         test('rejects a PUB_WA key with a corrupted checksum', async () => {
             const corrupted = validMemo.slice(0, -1) + (validMemo.endsWith('i') ? 'j' : 'i')
-            await expect(
-                contracts.create.actions.parsememo([corrupted]).send()
-            ).rejects.toThrow('eosio_assert: Invalid public key checksum')
+            await expect(contracts.create.actions.parsememo([corrupted]).send()).rejects.toThrow(
+                'eosio_assert: Invalid public key checksum'
+            )
         })
 
         test('accepts WA keys across user presence values and rpid lengths', async () => {
