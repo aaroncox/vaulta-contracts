@@ -21,6 +21,11 @@ build/dir:
 clean:
 	rm -rf build
 
-testnet: build/debug
+testnet:
+	@test -f build/${GIFT_CONTRACT_NAME}.wasm -a -f build/${GIFT_CONTRACT_NAME}.abi || { \
+		echo "No build artifacts in $(CURDIR)/build."; \
+		echo "Run 'make build/gift/debug' from the repository root first."; \
+		exit 1; \
+	}
 	cleos -u $(TESTNET_NODE_URL) set contract $(GIFT_TESTNET_ACCOUNT) \
 		build/ ${GIFT_CONTRACT_NAME}.wasm ${GIFT_CONTRACT_NAME}.abi

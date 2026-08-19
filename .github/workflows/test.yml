@@ -36,12 +36,16 @@ jobs:
             - uses: oven-sh/setup-bun@v1
             - name: Install dependencies
               run: make node_modules
-            - name: Install CDT
-              run: |
-                  source .env
-                  curl -s -L https://github.com/AntelopeIO/cdt/releases/download/v${CDT_VERSION}/cdt_${CDT_VERSION}-1_amd64.deb -o cdt.deb
-                  sudo apt install ./cdt.deb
+            - name: Set up Docker Buildx
+              uses: docker/setup-buildx-action@v3
+              with:
+                  install: true
+            - name: Cache toolchain image layers
+              uses: actions/cache@v4
+              with:
+                  path: /tmp/.buildx-cache
+                  key: cdt-image-${{ hashFiles('docker/Dockerfile', '.env') }}
             - name: Run checks
               run: make jscheck
             - name: Run tests
-              run: make test
+              run: make test DOCKER_BUILD_FLAGS="--load --cache-from type=local,src=/tmp/.buildx-cache --cache-to type=local,dest=/tmp/.buildx-cache,mode=max"

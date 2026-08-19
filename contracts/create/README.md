@@ -33,21 +33,22 @@ The contract stores no tables.
 
 ## Building
 
-Requires [Antelope CDT v4.1.1](https://github.com/AntelopeIO/cdt/releases/tag/v4.1.1). The build refuses to run under any other version, since the compiler version determines the code hash. Build settings, including the pinned `CDT_VERSION`, come from the repository `.env` file.
+Docker is the only requirement. Builds run inside a container holding Antelope CDT v4.1.1, the version pinned by `CDT_VERSION` in the repository `.env`, installed from the official release package. The container fixes the toolchain completely, which the version alone does not: CDT compiles its wasm C library differently depending on the operating system it was built on, so a locally compiled CDT of the same version produces different bytes.
+
+Run this from the repository root, not from this directory:
 
 ```
-make clean
-make build/production
+make build/create/production
 ```
 
-The output is `build/create.wasm` and `build/create.abi`.
+The output is `contracts/create/build/create.wasm` and `contracts/create/build/create.abi`. The same pattern builds any contract, as `make build/<name>/production`, and `make build/<name>/debug` produces the artifacts the test suite uses. Hosts on arm64, including Apple Silicon, run the image emulated, which is slower and produces identical output.
 
 ## Verifying a deployment
 
 Compare the sha256 of a clean local build against the on-chain code hash:
 
 ```
-shasum -a 256 build/create.wasm
+shasum -a 256 contracts/create/build/create.wasm
 cleos -u https://vaulta.greymass.com get code create.gm
 ```
 

@@ -1,82 +1,57 @@
+include .env
+
 BIN := ./node_modules/.bin
 SHELL := /bin/bash
 
-# CONTRACT BUILD
+CDT_IMAGE := vaulta-contracts-cdt:$(CDT_VERSION)
 
+DOCKER_RUN = docker run --rm --platform=linux/amd64 \
+	-u $$(id -u):$$(id -g) \
+	-e HOME=/tmp \
+	-v "$(CURDIR)":/repo \
+	-w /repo \
+	$(CDT_IMAGE)
+
+# DOCKER BUILDS
+
+DOCKER_BUILD_FLAGS ?=
+
+.PHONY: docker/image
+docker/image:
+	docker build --platform=linux/amd64 $(DOCKER_BUILD_FLAGS) \
+		--build-arg CDT_VERSION=$(CDT_VERSION) \
+		-t $(CDT_IMAGE) docker
+
+# CONTRACT BUILD
+#
+# Every build runs inside the toolchain container. The native/... targets hold the
+# recipes that run inside it and are not meant to be invoked on a host.
+
+.PHONY: build build/debug build/production
 build: build/production
 
-build/debug: build/api/debug build/create/debug build/gift/debug build/mocksystem/debug build/mockreceiver/debug build/registry/debug build/sentiment/debug build/tokens/debug
+build/debug: docker/image
+	$(DOCKER_RUN) make native/build/debug
 
-build/production: build/api/production build/create/production build/gift/production build/registry/production build/sentiment/production build/tokens/production
+build/production: docker/image
+	$(DOCKER_RUN) make native/build/production
 
-build/api:
-	make -C contracts/api build
+build/%: docker/image
+	$(DOCKER_RUN) make native/build/$*
 
-build/api/debug:
-	make -C contracts/api build/debug
+.PHONY: native/build/debug native/build/production
+native/build/debug: native/build/api/debug native/build/create/debug native/build/gift/debug native/build/mocksystem/debug native/build/mockreceiver/debug native/build/registry/debug native/build/sentiment/debug native/build/tokens/debug
 
-build/create:
-	make -C contracts/create build
+native/build/production: native/build/api/production native/build/create/production native/build/gift/production native/build/registry/production native/build/sentiment/production native/build/tokens/production
 
-build/create/debug:
-	make -C contracts/create build/debug
+native/build/%/debug:
+	make -C contracts/$* build/debug
 
-build/create/production:
-	make -C contracts/create build/production
+native/build/%/production:
+	make -C contracts/$* build/production
 
-build/gift:
-	make -C contracts/gift build
-
-build/gift/debug:
-	make -C contracts/gift build/debug
-
-build/gift/production:
-	make -C contracts/gift build/production
-
-build/api/production:
-	make -C contracts/api build/production
-
-build/mocksystem:
-	make -C contracts/mocksystem build
-
-build/mocksystem/debug:
-	make -C contracts/mocksystem build/debug
-
-build/mockreceiver:
-	make -C contracts/mockreceiver build
-
-build/mockreceiver/debug:
-	make -C contracts/mockreceiver build/debug
-
-build/mockreceiver/production:
-	make -C contracts/mockreceiver build/production	
-
-build/registry:
-	make -C contracts/registry build
-
-build/registry/debug:
-	make -C contracts/registry build/debug
-
-build/sentiment:
-	make -C contracts/sentiment build
-
-build/sentiment/debug:
-	make -C contracts/sentiment build/debug
-
-build/sentiment/production:
-	make -C contracts/sentiment build/production
-
-build/registry/production:
-	make -C contracts/registry build/production
-
-build/tokens:
-	make -C contracts/tokens build
-
-build/tokens/debug:
-	make -C contracts/tokens build/debug
-
-build/tokens/production:
-	make -C contracts/tokens build/production
+native/build/%:
+	make -C contracts/$* build
 
 .PHONY: clean
 clean:
@@ -84,11 +59,11 @@ clean:
 
 # MAINNET
 .PHONY: mainnet/create
-mainnet/create:
+mainnet/create: build/create/production
 	make -C contracts/create mainnet
 
 .PHONY: mainnet/sentiment
-mainnet/sentiment:
+mainnet/sentiment: build/sentiment/debug
 	make -C contracts/sentiment mainnet
 
 # TESTNET
@@ -97,11 +72,11 @@ mainnet/sentiment:
 testnet: testnet/api testnet/mockreceiver testnet/registry testnet/sentiment testnet/tokens
 
 .PHONY: testnet/api
-testnet/api:
+testnet/api: build/api/debug
 	make -C contracts/api testnet
 
 .PHONY: testnet/create
-testnet/create:
+testnet/create: build/create/debug
 	make -C contracts/create testnet
 
 .PHONY: testnet/create/verify
@@ -109,23 +84,23 @@ testnet/create/verify: node_modules
 	bun testnet/verify-create.ts
 
 .PHONY: testnet/gift
-testnet/gift:
+testnet/gift: build/gift/debug
 	make -C contracts/gift testnet
 
 .PHONY: testnet/mockreceiver
-testnet/mockreceiver:
+testnet/mockreceiver: build/mockreceiver/debug
 	make -C contracts/mockreceiver testnet
 
 .PHONY: testnet/registry
-testnet/registry:
+testnet/registry: build/registry/debug
 	make -C contracts/registry testnet
 
 .PHONY: testnet/sentiment
-testnet/sentiment:
+testnet/sentiment: build/sentiment/debug
 	make -C contracts/sentiment testnet
 
 .PHONY: testnet/tokens
-testnet/tokens:
+testnet/tokens: build/tokens/debug
 	make -C contracts/tokens testnet
 
 .PHONY: testnet/gift/demo
@@ -217,5 +192,5 @@ codegen/clean:
 ./codegen/tokens.ts: ./contracts/tokens/build/tokens.abi
 	${BIN}/wharfkit generate --json ./contracts/tokens/build/tokens.abi --file ./codegen/tokens.ts tokens
 
-./contracts/%.abi:
-	make -C contracts/$(firstword $(subst /, ,$*)) build/debug
+./contracts/%.abi: docker/image
+	$(DOCKER_RUN) make native/build/$(firstword $(subst /, ,$*))/debug

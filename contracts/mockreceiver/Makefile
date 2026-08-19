@@ -22,6 +22,11 @@ build/dir:
 clean:
 	rm -rf build
 
-testnet: build/debug
+testnet:
+	@test -f build/${MOCKRECEIVER_CONTRACT_NAME}.wasm -a -f build/${MOCKRECEIVER_CONTRACT_NAME}.abi || { \
+		echo "No build artifacts in $(CURDIR)/build."; \
+		echo "Run 'make build/mockreceiver/debug' from the repository root first."; \
+		exit 1; \
+	}
 	cleos -u $(TESTNET_NODE_URL) set contract $(MOCKRECEIVER_TESTNET_ACCOUNT) \
 		build/ ${MOCKRECEIVER_CONTRACT_NAME}.wasm ${MOCKRECEIVER_CONTRACT_NAME}.abi
